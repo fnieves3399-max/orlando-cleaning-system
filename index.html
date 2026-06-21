@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<!--
+=== ORLANDO CLEANING GROWTH SYSTEM — SETUP ===
+
+1. Create a project at https://supabase.com
+2. Run the SQL below in Supabase → SQL Editor
+3. Set SUPABASE_URL and SUPABASE_ANON_KEY (search "CONFIGURE HERE" below)
+
+── SQL MIGRATION ──────────────────────────────────────────────────────────────
+
+create table customers (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users not null,
+  first_name text not null default '', last_name text not null default '',
+  phone text default '', email text default '', address text default '',
+  city text default 'Orlando', zip text default '',
+  lead_source text default '', customer_type text default 'Residential',
+  notes text default '', status text default 'new lead',
+  created_at timestamptz default now()
+);
+
+create table subcontractors (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users not null,
+  name text not null default '', phone text default '', email text default '',
+  service_area text default '', pay_rate_type text default 'percentage',
+  pay_rate numeric default 60, jobs_completed int default 0,
+  rating numeric default 5.0, status text default 'active',
+  notes text default '', created_at timestamptz default now()
+);
+
+create table jobs (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users not null,
+  customer_id uuid references customers(id) on delete set null,
+  subcontractor_id uuid references subcontractors(id) on delete set null,
+  address text default '', service_type text default 'Standard cleaning',
+  scheduled_date date, start_time text default '', end_time text default '',
+  price numeric default 0, payout numeric default 0,
+  status text default 'scheduled', notes text default '',
+  created_at timestamptz default now()
+);
+
+create table expenses (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users not null,
+  category text default 'Other', amount numeric default 0,
+  notes text default '', expense_date date default current_date,
+  created_at timestamptz default now()
+);
+
+alter table customers enable row level security;
+alter table subcontractors enable row level security;
+alter table jobs enable row level security;
+alter table expenses enable row level security;
+
+create policy "own_customers" on customers for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+create policy "own_subs" on subcontractors for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+create policy "own_jobs" on jobs for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+create policy "own_expenses" on expenses for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+
+───────────────────────────────────────────────────────────────────────────────
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Orlando Cleaning Growth System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root {
+  --brand-50:#EFF7FE;--brand-100:#DCEEFB;--brand-200:#BFE0F7;--brand-300:#8FCAF0;
+  --brand-400:#56B0E8;--brand-500:#2A9BE0;--brand-600:#0E7DC9;--brand-700:#0A63A0;
+  --brand-800:#0A4F7E;--brand-900:#0C3D60;
+  --green-50:#EEFAF3;--green-100:#DAF3E6;--green-200:#B4E6CC;--green-300:#7FD3A8;
+  --green-400:#46BE83;--green-500:#27B978;--green-600:#1FA968;--green-700:#178A54;--green-800:#156E45;
+  --navy-700:#163A5E;--navy-800:#102C49;--navy-900:#0C2138;
+  --white:#FFFFFF;--gray-50:#F6F8FB;--gray-100:#EDF1F6;--gray-200:#DEE5EE;
+  --gray-300:#C7D2DF;--gray-400:#9CACBE;--gray-500:#6E8195;--gray-600:#51647A;
+  --gray-700:#36495D;--gray-800:#233547;--gray-900:#0F1C2B;
+  --amber-50:#FEF6E7;--amber-100:#FBE9C2;--amber-500:#E8A93B;--amber-600:#C9881C;
+  --red-50:#FDEDED;--red-100:#F9D5D5;--red-500:#E2574C;--red-600:#CE3A30;
+  --bg-app:var(--gray-50);--surface-card:var(--white);--surface-sunken:var(--gray-100);
+  --border:var(--gray-200);--border-strong:var(--gray-300);--border-brand:var(--brand-200);
+  --text-strong:var(--navy-900);--text-body:var(--gray-700);--text-muted:var(--gray-500);
+  --text-faint:var(--gray-400);--text-on-navy:#DCE7F2;--text-link:var(--brand-700);
+  --accent:var(--brand-600);--positive:var(--green-600);--warning:var(--amber-600);--danger:var(--red-600);
+  --ring:color-mix(in srgb,var(--brand-500) 45%,transparent);
+  --font-display:'Plus Jakarta Sans',ui-sans-serif,system-ui,sans-serif;
+  --font-body:'Public Sans',ui-sans-serif,system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',monospace;
+  --text-2xs:.6875rem;--text-xs:.75rem;--text-sm:.8125rem;--text-md:.9375rem;
+  --text-lg:1.0625rem;--text-xl:1.3125rem;--text-2xl:1.625rem;--text-3xl:2rem;--text-4xl:2.625rem;
+  --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;
+  --space-6:1.5rem;--space-7:2rem;--space-8:2.5rem;
+  --sidebar-width:248px;--topbar-height:64px;--content-max:1240px;
+  --radius-xs:4px;--radius-sm:6px;--radius-md:10px;--radius-lg:12px;
+  --radius-xl:16px;--radius-2xl:22px;--radius-pill:999px;
+  --shadow-xs:0 1px 2px rgba(12,33,56,.06);
+  --shadow-sm:0 1px 2px rgba(12,33,56,.06),0 1px 3px rgba(12,33,56,.10);
+  --shadow-md:0 2px 4px rgba(12,33,56,.05),0 6px 16px rgba(12,33,56,.10);
+  --shadow-lg:0 8px 24px rgba(12,33,56,.12),0 2px 6px rgba(12,33,56,.08);
+  --shadow-xl:0 18px 48px rgba(12,33,56,.18),0 6px 14px rgba(12,33,56,.10);
+  --shadow-brand:0 6px 18px rgba(14,125,201,.30);
+  --focus-ring:0 0 0 3px color-mix(in srgb,var(--brand-500) 45%,transparent);
+  --ease-out:cubic-bezier(0.22,1,0.36,1);--dur-fast:120ms;--dur-base:180ms;--dur-slow:300ms;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:var(--font-body);font-size:var(--text-md);color:var(--text-body);background:var(--bg-app);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,h5,h6{font-family:var(--font-display);color:var(--navy-900);margin:0}
+p{margin:0}
+a{color:var(--text-link)}
+input,select,textarea,button{font-family:inherit}
+#root{height:100vh}
+.eyebrow{font-family:var(--font-display);font-size:var(--text-xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:3px}
+@keyframes slideIn{from{transform:translateX(30px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+/* ================================================================
+   CONFIGURE HERE — paste your Supabase project credentials
+   ================================================================ */
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+const sb = (SUPABASE_URL !== 'YOUR_SUPABASE_URL')
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+/* ================================================================
+   ICONS
+   ================================================================ */
+const Ico = ({paths, size=18, ...rest}) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" {...rest}>
+    {paths}
+  </svg>
+);
+const I = {
+  dashboard: p => <Ico {...p} paths={<path d="M3 13h8V3H3zM13 21h8v-10h-8zM13 3v6h8V3zM3 21h8v-6H3z"/>}/>,
+  users: p => <Ico {...p} paths={<><circle cx={9} cy={8} r={3.2}/><path d="M2.5 20c.6-3.4 3-5.2 6.5-5.2s5.9 1.8 6.5 5.2M16 5.2A3 3 0 0 1 16 11M18 14.4c2.3.5 3.7 2 4 5.6"/></>}/>,
+  calculator: p => <Ico {...p} paths={<><rect x={4} y={2.5} width={16} height={19} rx={2.5}/><path d="M8 6.5h8M8 11h.01M12 11h.01M16 11h.01M8 14.5h.01M12 14.5h.01M16 14.5h.01M8 18h.01M12 18h.01M16 18h.01"/></>}/>,
+  calendar: p => <Ico {...p} paths={<><rect x={3.5} y={5} width={17} height={16} rx={2.5}/><path d="M3.5 10h17M8 3v4M16 3v4"/></>}/>,
+  briefcase: p => <Ico {...p} paths={<><rect x={3} y={7.5} width={18} height={12.5} rx={2.5}/><path d="M8 7.5V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1.5M3 13h18"/></>}/>,
+  dollar: p => <Ico {...p} paths={<path d="M12 2v20M16 6.5C16 4.6 14.2 3.5 12 3.5S8 4.7 8 6.8C8 11 16 9.8 16 14c0 2.1-1.8 3.3-4 3.3S8 16.2 8 14.3"/>}/>,
+  megaphone: p => <Ico {...p} paths={<><path d="M3 11v2a1 1 0 0 0 1 1h2l9 5V5L6 10H4a1 1 0 0 0-1 1z"/><path d="M18 8a4 4 0 0 1 0 8"/></>}/>,
+  map: p => <Ico {...p} paths={<><path d="M9 4.5 3.5 6.7v12.8L9 17.3l6 2.2 5.5-2.2V4.5L15 6.7z"/><path d="M9 4.5v12.8M15 6.7v12.8"/></>}/>,
+  settings: p => <Ico {...p} paths={<><circle cx={12} cy={12} r={3}/><path d="M19.4 13.5a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 6.2 19l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.1-2.9H2a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 3.2 6.2l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H8a1.7 1.7 0 0 0 1-1.6V2a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V8a1.7 1.7 0 0 0 1.6 1H22a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></>}/>,
+  plus: p => <Ico {...p} paths={<path d="M12 5v14M5 12h14"/>}/>,
+  search: p => <Ico {...p} paths={<><circle cx={11} cy={11} r={7}/><path d="M21 21l-4.3-4.3"/></>}/>,
+  bell: p => <Ico {...p} paths={<><path d="M18 8.5a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></>}/>,
+  arrowRight: p => <Ico {...p} paths={<path d="M5 12h14M13 6l6 6-6 6"/>}/>,
+  arrowUp: p => <Ico {...p} paths={<path d="M12 19V5M5 12l7-7 7 7"/>}/>,
+  arrowDown: p => <Ico {...p} paths={<path d="M12 5v14M19 12l-7 7-7-7"/>}/>,
+  phone: p => <Ico {...p} paths={<path d="M6.6 3.5 4 4.3a2 2 0 0 0-1.3 2.4 18 18 0 0 0 12.6 12.6 2 2 0 0 0 2.4-1.3l.8-2.6a1.5 1.5 0 0 0-.9-1.8l-3-1.1a1.5 1.5 0 0 0-1.6.4l-1 1A14 14 0 0 1 8 9l1-1a1.5 1.5 0 0 0 .4-1.6l-1.1-3a1.5 1.5 0 0 0-1.7-.9z"/>}/>,
+  mail: p => <Ico {...p} paths={<><rect x={3} y={5} width={18} height={14} rx={2.5}/><path d="M3.5 6.5l8.5 6 8.5-6"/></>}/>,
+  mapPin: p => <Ico {...p} paths={<><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z"/><circle cx={12} cy={10} r={2.6}/></>}/>,
+  sparkles: p => <Ico {...p} paths={<><path d="M12 3l1.7 4.6L18 9l-4.3 1.4L12 15l-1.7-4.6L6 9l4.3-1.4z"/><path d="M19 14l.8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8z"/></>}/>,
+  check: p => <Ico {...p} paths={<path d="M5 12.5l4.5 4.5L19 7"/>}/>,
+  clock: p => <Ico {...p} paths={<><circle cx={12} cy={12} r={8.5}/><path d="M12 7.5V12l3 2"/></>}/>,
+  filter: p => <Ico {...p} paths={<path d="M3 5h18l-7 8v6l-4 2v-8z"/>}/>,
+  trendingUp: p => <Ico {...p} paths={<><path d="M3 16.5l5.5-5.5 4 4L21 7.5"/><path d="M16 7.5h5v5"/></>}/>,
+  close: p => <Ico {...p} paths={<path d="M18 6L6 18M6 6l12 12"/>}/>,
+  edit: p => <Ico {...p} paths={<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>}/>,
+  trash: p => <Ico {...p} paths={<><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/></>}/>,
+  facebook: p => <Ico {...p} paths={<path d="M14 9h2.5V5.5H14c-2 0-3.5 1.5-3.5 3.5v2H8v3.5h2.5V21h3.5v-6.5h2.5L17 11h-3V9z"/>}/>,
+  instagram: p => <Ico {...p} paths={<><rect x={3.5} y={3.5} width={17} height={17} rx={5}/><circle cx={12} cy={12} r={4}/><path d="M17 7h.01"/></>}/>,
+  logout: p => <Ico {...p} paths={<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>}/>,
+  copy: p => <Ico {...p} paths={<><rect x={9} y={9} width={13} height={13} rx={2}/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></>}/>,
+  refresh: p => <Ico {...p} paths={<path d="M23 4v6h-6M1 20v-6h6M3.5 9a9 9 0 0 1 14.8-3.4L23 10M1 14l4.7 4.4A9 9 0 0 0 20.5 15"/>}/>,
+};
+
+/* ================================================================
+   UTILITIES
+   ================================================================ */
+const fmt$ = n => '$' + (n||0).toLocaleString('en-US');
+const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—';
+const fmtDateShort = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'}) : '—';
+const today = () => new Date().toISOString().split('T')[0];
+const monthStart = () => { const n=new Date(); return new Date(n.getFullYear(),n.getMonth(),1).toISOString().split('T')[0]; };
+const weekStart = () => { const n=new Date(); n.setDate(n.getDate()-7); return n.toISOString().split('T')[0]; };
+
+const STATUS_STYLE = {
+  'new lead':   {bg:'var(--brand-50)',  color:'var(--brand-700)'},
+  'quoted':     {bg:'var(--amber-50)',  color:'var(--amber-600)'},
+  'booked':     {bg:'var(--brand-100)', color:'var(--brand-800)'},
+  'active':     {bg:'var(--green-50)',  color:'var(--green-700)'},
+  'inactive':   {bg:'var(--gray-100)',  color:'var(--gray-500)'},
+  'completed':  {bg:'var(--green-50)',  color:'var(--green-700)'},
+  'lost':       {bg:'var(--red-50)',    color:'var(--red-600)'},
+  'canceled':   {bg:'var(--red-50)',    color:'var(--red-600)'},
+  'scheduled':  {bg:'var(--brand-50)',  color:'var(--brand-700)'},
+  'in progress':{bg:'var(--amber-50)', color:'var(--amber-600)'},
+  'active_sub': {bg:'var(--green-50)', color:'var(--green-700)'},
+};
+
+const AVATAR_COLORS = ['#0E7DC9','#1FA968','#163A5E','#E8A93B','#CE3A30','#8B5CF6','#0891b2'];
+const avatarColor = name => AVATAR_COLORS[(name||'?').charCodeAt(0) % AVATAR_COLORS.length];
+const initials = name => (name||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+
+/* ================================================================
+   CORE UI COMPONENTS
+   ================================================================ */
+function Btn({variant='primary',size='md',children,leading,trailing,fullWidth,disabled,onClick,type='button',style:sx={}}) {
+  const V = {
+    primary: {bg:'var(--brand-600)',hov:'var(--brand-700)',color:'#fff',border:'transparent'},
+    secondary:{bg:'var(--surface-card)',hov:'var(--gray-50)',color:'var(--navy-900)',border:'var(--border-strong)'},
+    success:  {bg:'var(--green-600)',hov:'var(--green-700)',color:'#fff',border:'transparent'},
+    ghost:    {bg:'transparent',hov:'var(--gray-50)',color:'var(--gray-700)',border:'transparent'},
+    danger:   {bg:'var(--red-600)',hov:'var(--red-700)',color:'#fff',border:'transparent'},
+  };
+  const v = V[variant]||V.primary;
+  const h = {sm:32,md:40,lg:48}[size]||40;
+  const px = {sm:12,md:16,lg:20}[size]||16;
+  const fs = {sm:'var(--text-sm)',md:'var(--text-md)',lg:'var(--text-lg)'}[size]||'var(--text-md)';
+  const [bg,setBg] = React.useState(v.bg);
+  return (
+    <button type={type} disabled={disabled} onClick={onClick}
+      onMouseEnter={()=>!disabled&&setBg(v.hov)}
+      onMouseLeave={()=>!disabled&&setBg(v.bg)}
+      style={{display:'inline-flex',alignItems:'center',justifyContent:'center',gap:7,height:h,
+        padding:`0 ${px}px`,width:fullWidth?'100%':undefined,border:`1px solid ${v.border}`,
+        borderRadius:'var(--radius-md)',background:bg,color:v.color,fontFamily:'var(--font-display)',
+        fontWeight:600,fontSize:fs,cursor:disabled?'not-allowed':'pointer',opacity:disabled?.55:1,
+        transition:`background var(--dur-base) var(--ease-out)`,flexShrink:0,...sx}}>
+      {leading}{children}{trailing}
+    </button>
+  );
+}
+
+function Card({children,accent,padding,style:sx={},onClick}) {
+  const p = padding==='none'?0:padding||'var(--space-6)';
+  return (
+    <div onClick={onClick} style={{background:'var(--surface-card)',border:'1px solid var(--border)',
+      borderRadius:'var(--radius-lg)',boxShadow:'var(--shadow-sm)',padding:p,
+      borderTop:accent?'3px solid var(--brand-600)':undefined,...sx}}>
+      {children}
+    </div>
+  );
+}
+
+function CardHeader({title,subtitle,action}) {
+  return (
+    <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:16,marginBottom:18}}>
+      <div>
+        <div style={{fontFamily:'var(--font-display)',fontWeight:800,fontSize:'var(--text-lg)',color:'var(--navy-900)'}}>{title}</div>
+        {subtitle&&<div style={{fontSize:'var(--text-sm)',color:'var(--text-muted)',marginTop:2}}>{subtitle}</div>}
+      </div>
+      {action}
+    </div>
+  );
+}
+
+function Badge({children,status,tone,dot}) {
+  const ss = status ? STATUS_STYLE[status] : null;
+  const T = {brand:{bg:'var(--brand-50)',color:'var(--brand-700)'},success:{bg:'var(--green-50)',color:'var(--green-700)'},
+    warning:{bg:'var(--amber-50)',color:'var(--amber-600)'},danger:{bg:'var(--red-50)',color:'var(--red-600)'},
+    navy:{bg:'var(--gray-100)',color:'var(--gray-700)'}};
+  const s = ss||(T[tone]||T.brand);
+  return (
+    <span style={{display:'inline-flex',alignItems:'center',gap:dot?5:0,height:22,padding:'0 9px',
+      borderRadius:'var(--radius-pill)',background:s.bg,color:s.color,
+      fontSize:'var(--text-xs)',fontWeight:600,fontFamily:'var(--font-display)',whiteSpace:'nowrap'}}>
+      {dot&&<span style={{width:6,height:6,borderRadius:'50%',background:'currentColor',flexShrink:0}}/>}
+      {status||children}
+    </span>
+  );
+}
+
+function Avatar({name='?',size='md'}) {
+  const sz={xs:24,sm:32,md:40,lg:52}[size]||40;
+  const fs={xs:10,sm:12,md:15,lg:19}[size]||15;
+  return (
+    <span style={{width:sz,height:sz,borderRadius:'50%',background:avatarColor(name),color:'#fff',
+      display:'inline-flex',alignItems:'center',justifyContent:'center',
+      fontFamily:'var(--font-display)',fontWeight:700,fontSize:fs,flexShrink:0}}>
+      {initials(name)}
+    </span>
+  );
+}
+
+const inputSx = {height:40,padding:'0 13px',border:'1px solid var(--border-strong)',
+  borderRadius:'var(--radius-md)',fontFamily:'var(--font-body)',fontSize:'var(--text-md)',
+  color:'var(--navy-900)',background:'#fff',outline:'none',width:'100%',boxSizing:'border-box'};
+
+function Input({value,onChange,placeholder,type='text',min,max,step,rows,multiline,...rest}) {
+  const focus = e=>{e.target.style.borderColor='var(--brand-500)';e.target.style.boxShadow='var(--focus-ring)'};
+  const blur  = e=>{e.target.style.borderColor='var(--border-strong)';e.target.style.boxShadow='none'};
+  if(multiline) return <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows||3}
+    onFocus={focus} onBlur={blur}
+    style={{...inputSx,height:'auto',padding:'10px 13px',resize:'vertical',lineHeight:1.5}}/>;
+  return <input type={type} value={value} onChange={onChange} placeholder={placeholder}
+    min={min} max={max} step={step} onFocus={focus} onBlur={blur} style={inputSx} {...rest}/>;
+}
+
+function Sel({value,onChange,options,style:sx={}}) {
+  const focus = e=>{e.target.style.borderColor='var(--brand-500)';e.target.style.boxShadow='var(--focus-ring)'};
+  const blur  = e=>{e.target.style.borderColor='var(--border-strong)';e.target.style.boxShadow='none'};
+  return (
+    <select value={value} onChange={onChange} onFocus={focus} onBlur={blur}
+      style={{...inputSx,appearance:'none',
+        backgroundImage:`url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%236E8195' stroke-width='1.6' stroke-linecap='round'><path d='M4 6l4 4 4-4'/></svg>")`,
+        backgroundRepeat:'no-repeat',backgroundPosition:'right 13px center',paddingRight:40,cursor:'pointer',...sx}}>
+      {options.map(o=>typeof o==='string'?<option key={o}>{o}</option>:<option key={o.value} value={o.value}>{o.label}</option>)}
+    </select>
+  );
+}
+
+function Field({label,children,error}) {
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:6}}>
+      <label style={{fontFamily:'var(--font-display)',fontSize:'var(--text-sm)',fontWeight:600,color:'var(--navy-900)'}}>{label}</label>
+      {children}
+      {error&&<span style={{fontSize:'var(--text-xs)',color:'var(--red-600)'}}>{error}</span>}
+    </div>
+  );
+}
+
+function Check({checked,onChange,label}) {
+  return (
+    <label style={{display:'inline-flex',alignItems:'center',gap:9,cursor:'pointer',
+      fontSize:'var(--text-md)',color:'var(--text-body)'}}>
+      <input type="checkbox" checked={!!checked} onChange={e=>onChange(e.target.checked)}
+        style={{width:17,height:17,accentColor:'var(--brand-600)',cursor:'pointer'}}/>
+      {label}
+    </label>
+  );
+}
+
+function StatCard({label,value,delta,trend,tone,icon,hint}) {
+  const T={success:{bg:'var(--green-50)',color:'var(--green-600)'},
+    brand:{bg:'var(--brand-50)',color:'var(--brand-600)'},
+    warning:{bg:'var(--amber-50)',color:'var(--amber-600)'},
+    navy:{bg:'var(--gray-100)',color:'var(--gray-700)'}};
+  const tc=T[tone]||T.brand;
+  return (
+    <Card>
+      <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:12}}>
+        <span style={{fontSize:'var(--text-sm)',color:'var(--text-muted)',fontWeight:500}}>{label}</span>
+        {icon&&<span style={{width:36,height:36,borderRadius:'var(--radius-md)',background:tc.bg,color:tc.color,
+          display:'inline-flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{icon}</span>}
+      </div>
+      <div style={{fontFamily:'var(--font-display)',fontSize:'var(--text-3xl)',fontWeight:800,
+        color:'var(--navy-900)',letterSpacing:'-0.02em',fontVariantNumeric:'tabular-nums',lineHeight:1.1}}>{value}</div>
+      {delta&&<div style={{display:'flex',alignItems:'center',gap:5,marginTop:8,fontSize:'var(--text-sm)',
+        color:trend==='up'?'var(--green-600)':'var(--red-600)',fontWeight:600}}>
+        {trend==='up'?<I.arrowUp size={14}/>:<I.arrowDown size={14}/>}{delta}</div>}
+      {hint&&<div style={{fontSize:'var(--text-xs)',color:'var(--text-muted)',marginTop:5}}>{hint}</div>}
+    </Card>
+  );
+}
+
+function Table({columns,rows,onRowClick,style:sx={}}) {
+  return (
+    <div style={{border:'1px solid var(--border)',borderRadius:'var(--radius-lg)',boxShadow:'var(--shadow-sm)',overflow:'hidden',...sx}}>
+      <table style={{width:'100%',borderCollapse:'collapse'}}>
+        <thead>
+          <tr style={{background:'var(--gray-50)',borderBottom:'1px solid var(--border)'}}>
+            {columns.map(c=>(
+              <th key={c.key} style={{padding:'10px 16px',textAlign:c.align||'left',fontSize:'var(--text-xs)',
+                fontWeight:700,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'.05em',
+                fontFamily:'var(--font-display)',whiteSpace:'nowrap'}}>{c.header}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.length===0?(
+            <tr><td colSpan={columns.length} style={{padding:'36px 16px',textAlign:'center',
+              color:'var(--text-muted)',fontSize:'var(--text-sm)'}}>No records yet.</td></tr>
+          ):rows.map((row,i)=>(
+            <tr key={row.id||i} onClick={()=>onRowClick?.(row)}
+              style={{borderBottom:i<rows.length-1?'1px solid var(--border)':undefined,
+                cursor:onRowClick?'pointer':'default',background:'var(--surface-card)',
+                transition:'background var(--dur-base) var(--ease-out)'}}
+              onMouseEnter={e=>onRowClick&&(e.currentTarget.style.background='var(--gray-50)')}
+              onMouseLeave={e=>onRowClick&&(e.currentTarget.style.background='var(--surface-card)')}>
+              {columns.map(c=>(
+                <td key={c.key} style={{padding:'12px 16px',fontSize:'var(--text-md)',
+                  color:'var(--text-body)',textAlign:c.align||'left'}}>
+                  {c.render?c.render(row[c.key],row):(row[c.key]??'—')}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function Meter({label,value,valueLabel,tone}) {
+  const C={success:'var(--green-500)',brand:'var(--brand-500)',
+    warning:'var(--amber-500)',navy:'var(--navy-700)',danger:'var(--red-500)'};
+  return (
+    <div>
+      <div style={{display:'flex',justifyContent:'space-between',marginBottom:7,fontSize:'var(--text-sm)'}}>
+        <span style={{color:'var(--text-body)',fontWeight:500}}>{label}</span>
+        <span style={{fontFamily:'var(--font-mono)',fontWeight:600,color:'var(--navy-900)'}}>{valueLabel||value+'%'}</span>
+      </div>
+      <div style={{height:7,background:'var(--gray-100)',borderRadius:999,overflow:'hidden'}}>
+        <div style={{width:Math.min(value,100)+'%',height:'100%',background:C[tone]||C.brand,borderRadius:999,
+          transition:'width var(--dur-slow) var(--ease-out)'}}/>
+      </div>
+    </div>
+  );
+}
+
+function Tabs({value,onChange,tabs,style:sx={}}) {
+  return (
+    <div style={{display:'flex',borderBottom:'1px solid var(--border)',...sx}}>
+      {tabs.map(t=>(
+        <button key={t.id} onClick={()=>onChange(t.id)}
+          style={{display:'inline-flex',alignItems:'center',gap:7,padding:'10px 16px',
+            border:'none',background:'transparent',cursor:'pointer',fontSize:'var(--text-sm)',
+            fontWeight:600,fontFamily:'var(--font-display)',
+            color:value===t.id?'var(--brand-600)':'var(--text-muted)',
+            borderBottom:value===t.id?'2px solid var(--brand-600)':'2px solid transparent',
+            marginBottom:-1,transition:'color var(--dur-base) var(--ease-out)'}}>
+          {t.label}
+          {t.count>0&&<span style={{minWidth:20,height:18,padding:'0 5px',borderRadius:99,
+            background:value===t.id?'var(--brand-100)':'var(--gray-100)',
+            color:value===t.id?'var(--brand-700)':'var(--text-muted)',
+            fontSize:11,fontWeight:700,display:'inline-flex',alignItems:'center',justifyContent:'center'}}>
+            {t.count}</span>}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Alert({tone,title,children}) {
+  const T={info:{bg:'var(--brand-50)',border:'var(--brand-100)',color:'var(--brand-800)'},
+    success:{bg:'var(--green-50)',border:'var(--green-100)',color:'var(--green-800)'},
+    warning:{bg:'var(--amber-50)',border:'var(--amber-100)',color:'var(--amber-600)'},
+    danger:{bg:'var(--red-50)',border:'var(--red-100)',color:'var(--red-600)'}};
+  const s=T[tone]||T.info;
+  return (
+    <div style={{padding:'12px 16px',borderRadius:'var(--radius-md)',background:s.bg,
+      border:`1px solid ${s.border}`,color:s.color,fontSize:'var(--text-sm)'}}>
+      {title&&<div style={{fontWeight:700,marginBottom:2}}>{title}</div>}
+      {children}
+    </div>
+  );
+}
+
+function Spin() {
+  return <div style={{width:20,height:20,borderRadius:'50%',border:'2.5px solid var(--gray-200)',
+    borderTopColor:'var(--brand-600)',animation:'spin .7s linear infinite'}}/>;
+}
+
+function Loading() {
+  return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:200}}>
+    <Spin/></div>;
+}
+
+/* Slide-over drawer */
+function Drawer({open,onClose,title,children,width=480}) {
+  if(!open) return null;
+  return (
+    <div style={{position:'fixed',inset:0,zIndex:50,display:'flex',justifyContent:'flex-end'}}>
+      <div onClick={onClose} style={{position:'absolute',inset:0,background:'rgba(12,33,56,.32)'}}/>
+      <div style={{position:'relative',width,maxWidth:'95vw',height:'100%',background:'var(--surface-card)',
+        boxShadow:'var(--shadow-xl)',display:'flex',flexDirection:'column',animation:'slideIn .22s var(--ease-out)'}}>
+        <div style={{padding:'20px 24px',borderBottom:'1px solid var(--border)',display:'flex',
+          alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
+          <h3 style={{fontSize:'var(--text-xl)'}}>{title}</h3>
+          <button onClick={onClose} style={{border:'none',background:'transparent',cursor:'pointer',
+            color:'var(--text-muted)',display:'inline-flex',padding:4}}><I.close size={20}/></button>
+        </div>
+        <div style={{flex:1,overflowY:'auto',padding:24}}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/* Toast notification */
+function useToast() {
+  const [toast,setToast] = React.useState(null);
+  const show = (msg,tone='success') => { setToast({msg,tone}); setTimeout(()=>setToast(null),3000); };
+  const Toast = toast ? (
+    <div style={{position:'fixed',bottom:24,right:24,zIndex:100,padding:'12px 20px',
+      borderRadius:'var(--radius-md)',boxShadow:'var(--shadow-lg)',
+      background:toast.tone==='success'?'var(--navy-900)':'var(--red-600)',
+      color:'#fff',fontSize:'var(--text-sm)',fontWeight:600,animation:'fadeIn .2s var(--ease-out)'}}>
+      {toast.msg}
+    </div>
+  ) : null;
+  return [Toast, show];
+}
+
+/* ================================================================
+   LOGO + APP SHELL
+   ================================================================ */
+function Logo({size=24,tone='dark'}) {
+  const c = tone==='light'?'#fff':'var(--navy-900)';
+  return (
+    <div style={{display:'inline-flex',alignItems:'center',gap:10}}>
+      <svg width={size+6} height={size+6} viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="9" fill="var(--brand-600)"/>
+        <path d="M16 6.5c3.2 3.6 6 6.9 6 10.2a6 6 0 1 1-12 0c0-3.3 2.8-6.6 6-10.2Z" fill="#fff"/>
+        <path d="M22.5 8.2l.5 1.4 1.4.5-1.4.5-.5 1.4-.5-1.4-1.4-.5 1.4-.5.5-1.4Z" fill="#fff" opacity=".85"/>
+      </svg>
+      <div style={{lineHeight:1}}>
+        <div style={{fontFamily:'var(--font-display)',fontWeight:800,fontSize:size*.72,color:c,letterSpacing:'-0.02em'}}>Orlando Cleaning</div>
+        <div style={{fontFamily:'var(--font-display)',fontWeight:700,fontSize:size*.36,color:'var(--brand-400)',letterSpacing:'.12em',textTransform:'uppercase',marginTop:2}}>Growth System</div>
+      </div>
+    </div>
+  );
+}
+
+const NAV = [
+  {id:'dashboard',label:'Dashboard',icon:'dashboard'},
+  {id:'crm',label:'Leads & CRM',icon:'users'},
+  {id:'quote',label:'Quote calculator',icon:'calculator'},
+  {id:'jobs',label:'Jobs',icon:'calendar'},
+  {id:'subs',label:'Subcontractors',icon:'briefcase'},
+  {id:'finance',label:'Financials',icon:'dollar'},
+  {id:'marketing',label:'Marketing studio',icon:'megaphone'},
+  {id:'seo',label:'Local SEO',icon:'map'},
+];
+
+function Sidebar({active,onNavigate,user,onLogout}) {
+  return (
+    <aside style={{width:'var(--sidebar-width)',flexShrink:0,background:'var(--navy-900)',
+      display:'flex',flexDirection:'column',height:'100%',position:'sticky',top:0}}>
+      <div style={{padding:'20px 20px 18px'}}><Logo size={22} tone="light"/></div>
+      <nav style={{display:'flex',flexDirection:'column',gap:2,padding:'6px 12px',flex:1}}>
+        {NAV.map(n=>{
+          const on=active===n.id; const Ic=I[n.icon];
+          return (
+            <button key={n.id} onClick={()=>onNavigate(n.id)}
+              style={{display:'flex',alignItems:'center',gap:11,padding:'9px 12px',
+                border:'none',borderRadius:'var(--radius-md)',cursor:'pointer',textAlign:'left',
+                background:on?'rgba(86,176,232,.16)':'transparent',
+                color:on?'#fff':'var(--text-on-navy)',fontFamily:'var(--font-display)',
+                fontSize:'var(--text-md)',fontWeight:on?700:500,
+                transition:'background var(--dur-base) var(--ease-out),color var(--dur-base) var(--ease-out)'}}
+              onMouseEnter={e=>{if(!on)e.currentTarget.style.background='rgba(255,255,255,.06)'}}
+              onMouseLeave={e=>{if(!on)e.currentTarget.style.background='transparent'}}>
+              <span style={{color:on?'var(--brand-300)':'var(--gray-400)',display:'inline-flex'}}><Ic size={19}/></span>
+              {n.label}
+            </button>
+          );
+        })}
+      </nav>
+      <div style={{padding:'14px 16px',borderTop:'1px solid rgba(255,255,255,.08)',display:'flex',alignItems:'center',gap:10}}>
+        <Avatar name={user?.email?.split('@')[0]||'Owner'} size="sm"/>
+        <div style={{lineHeight:1.25,flex:1,overflow:'hidden'}}>
+          <div style={{fontFamily:'var(--font-display)',fontSize:'var(--text-sm)',fontWeight:600,color:'#fff',
+            overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{user?.email||'Owner'}</div>
+          <div style={{fontSize:'var(--text-2xs)',color:'var(--gray-400)'}}>Orlando, FL</div>
+        </div>
+        <button onClick={onLogout} title="Sign out" style={{border:'none',background:'transparent',
+          cursor:'pointer',color:'var(--gray-400)',display:'inline-flex',padding:4}}><I.logout size={17}/></button>
+      </div>
+    </aside>
+  );
+}
+
+function Topbar({title,subtitle,onAddLead}) {
+  return (
+    <header style={{height:'var(--topbar-height)',flexShrink:0,display:'flex',alignItems:'center',
+      gap:'var(--space-5)',padding:'0 var(--space-7)',background:'var(--surface-card)',
+      borderBottom:'1px solid var(--border)',position:'sticky',top:0,zIndex:5}}>
+      <div style={{flex:1}}>
+        <div style={{fontFamily:'var(--font-display)',fontSize:'var(--text-xl)',fontWeight:800,
+          color:'var(--navy-900)',letterSpacing:'-0.01em',lineHeight:1.1}}>{title}</div>
+        {subtitle&&<div style={{fontSize:'var(--text-sm)',color:'var(--text-muted)'}}>{subtitle}</div>}
+      </div>
+      <div style={{display:'flex',alignItems:'center',gap:8,height:38,padding:'0 12px',width:220,
+        background:'var(--gray-50)',border:'1px solid var(--border)',borderRadius:'var(--radius-md)',color:'var(--text-muted)'}}>
+        <I.search size={16}/><span style={{fontSize:'var(--text-sm)'}}>Search…</span>
+      </div>
+      <Btn variant="primary" leading={<I.plus size={16}/>} onClick={onAddLead}>Add lead</Btn>
+    </header>
+  );
+}
+
+/* ================================================================
+   DASHBOARD SCREEN
+   ================================================================ */
+function Dashboard({user}) {
+  const [data,setData] = React.useState(null);
+  React.useEffect(()=>{
+    if(!sb){setData({total:0,week:0,quotes:0,revenue:0,expenses:0,payouts:0,profit:0,jobs:[],monthly:[]});return;}
+    async function load(){
+      const uid=user.id; const ms=monthStart(); const ws=weekStart();
+      const [[{count:total}],[{count:week}],[{count:qc}],[cjobs],[expenses],[upcoming]] = await Promise.all([
+        sb.from('customers').select('*',{count:'exact',head:true}).eq('user_id',uid),
+        sb.from('customers').select('*',{count:'exact',head:true}).eq('user_id',uid).gte('created_at',ws),
+        sb.from('jobs').select('*',{count:'exact',head:true}).eq('user_id',uid).in('status',['scheduled','in progress']),
+        sb.from('jobs').select('price,payout').eq('user_id',uid).eq('status','completed').gte('scheduled_date',ms),
+        sb.from('expenses').select('amount').eq('user_id',uid).gte('expense_date',ms),
+        sb.from('jobs').select('*,customer:customers(first_name,last_name,city),sub:subcontractors(name)')
+          .eq('user_id',uid).not('status','eq','completed').not('status','eq','canceled')
+          .order('scheduled_date').limit(6),
+      ].map(p=>Promise.all([p])));
+      const revenue=(cjobs.data||[]).reduce((s,j)=>s+(j.price||0),0);
+      const payouts=(cjobs.data||[]).reduce((s,j)=>s+(j.payout||0),0);
+      const exp=(expenses.data||[]).reduce((s,e)=>s+(e.amount||0),0);
+      setData({total:total||0,week:week||0,quotes:qc||0,revenue,payouts,expenses:exp,
+        profit:revenue-payouts-exp,jobs:upcoming.data||[]});
+    }
+    load().catch(console.error);
+  },[]);
+
+  if(!data) return <Loading/>;
+  const s=data;
+  const jobCols=[
+    {key:'scheduled_date',header:'Date',render:(v,r)=><div>
+      <div style={{fontWeight:600,color:'var(--navy-900)'}}>{fmtDate(v)}</div>
+      <div style={{fontSize:'var(--text-xs)',color:'var(--text-muted)'}}>{r.start_time}</div></div>},
+    {key:'customer',header:'Customer',render:(_,r)=><span style={{fontWeight:600,color:'var(--navy-900)'}}>
+      {r.customer?`${r.customer.first_name} ${r.customer.last_name}`:'—'}</span>},
+    {key:'service_type',header:'Service'},
+    {key:'sub',header:'Sub',render:(_,r)=>r.sub?.name||'—'},
+    {key:'price',header:'Price',align:'right',render:v=><span style={{fontVariantNumeric:'tabular-nums',fontWeight:600,color:'var(--navy-900)'}}>{fmt$(v)}</span>},
+    {key:'status',header:'Status',render:v=><Badge status={v}/>},
+  ];
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:'var(--space-6)'}}>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'var(--space-4)'}}>
+        <StatCard label="Revenue this month" value={fmt$(s.revenue)} tone="success" icon={<I.dollar size={18}/>} delta={s.revenue>0?'+'+fmt$(s.revenue):undefined} trend="up"/>
+        <StatCard label="New leads this week" value={s.week} tone="brand" icon={<I.users size={18}/>}/>
+        <StatCard label="Active jobs" value={s.quotes} tone="warning" icon={<I.calendar size={18}/>}/>
+        <StatCard label="Estimated profit" value={fmt$(s.profit)} tone="navy" icon={<I.trendingUp size={18}/>}/>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'var(--space-4)'}}>
+        <StatCard label="Total leads" value={s.total} tone="brand" icon={<I.users size={18}/>}/>
+        <StatCard label="Payouts this month" value={fmt$(s.payouts)} tone="navy" icon={<I.dollar size={18}/>}/>
+        <StatCard label="Expenses this month" value={fmt$(s.expenses)} tone="warning" icon={<I.briefcase size={18}/>}/>
+      </div>
+      <Card padding="none">
+        <div style={{padding:'var(--space-5) var(--space-6) 0'}}>
+          <CardHeader title="Upcoming jobs" subtitle={`${s.jobs.length} scheduled`}/>
+        </div>
+        <Table style={{border:'none',borderRadius:0,boxShadow:'none'}} columns={jobCols} rows={s.jobs}/>
+      </Card>
+    </div>
+  );
+}
+
+/* ================================================================
+   CRM SCREEN
+   ================================================================ */
+function CrmDrawer({lead,onClose,onUpdate,toast}) {
+  const [tab,setTab] = React.useState('overview');
+  const [editing,setEditing] = React.useState(false);
+  const [form,setForm] = React.useState({});
+  if(!lead) return null;
+  const name = `${lead.first_name} ${lead.last_name}`;
+
+  const save = async () => {
+    if(!sb) return;
+    const {error} = await sb.from('customers').update(form).eq('id',lead.id);
+    if(!error){toast('Customer updated');onUpdate();setEditing(false);}
+    else toast('Error: '+error.message,'danger');
+  };
+
+  return (
+    <div style={{position:'fixed',inset:0,zIndex:40,display:'flex',justifyContent:'flex-end'}}>
+      <div onClick={onClose} style={{position:'absolute',inset:0,background:'rgba(12,33,56,.32)'}}/>
+      <div style={{position:'relative',width:460,maxWidth:'92vw',height:'100%',background:'var(--surface-card)',
+        boxShadow:'var(--shadow-xl)',display:'flex',flexDirection:'column',animation:'slideIn .22s var(--ease-out)'}}>
+        <div style={{padding:'var(--space-6)',borderBottom:'1px solid var(--border)',display:'flex',gap:14,alignItems:'flex-start'}}>
+          <Avatar name={name} size="lg"/>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:'var(--font-display)',fontWeight:800,fontSize:'var(--text-xl)',color:'var(--navy-900)'}}>{name}</div>
+            <div style={{display:'flex',alignItems:'center',gap:6,color:'var(--text-muted)',fontSize:'var(--text-sm)',marginTop:3}}>
+              <I.mapPin size={13}/>{lead.city}, FL · {lead.customer_type}
+            </div>
+            <div style={{marginTop:10}}><Badge status={lead.status}/></div>
+          </div>
+          <button onClick={onClose} style={{border:'none',background:'transparent',cursor:'pointer',color:'var(--text-muted)',display:'inline-flex'}}><I.close size={20}/></button>
+        </div>
+        <div style={{display:'flex',gap:8,padding:'var(--space-4) var(--space-6)'}}>
+          {lead.phone&&<Btn variant="primary" size="sm" leading={<I.phone size={14}/>}>Call</Btn>}
+          {lead.email&&<Btn variant="secondary" size="sm" leading={<I.mail size={14}/>}>Email</Btn>}
+          <Btn variant={editing?'success':'ghost'} size="sm" leading={<I.edit size={14}/>} onClick={editing?save:()=>{setForm(lead);setEditing(true);}}>{editing?'Save':'Edit'}</Btn>
+        </div>
+        <div style={{padding:'0 var(--space-6)'}}>
+          <Tabs value={tab} onChange={setTab} tabs={[{id:'overview',label:'Overview'},{id:'notes',label:'Notes'}]}/>
+        </div>
+        <div style={{padding:'var(--space-6)',overflowY:'auto',flex:1}}>
+          {tab==='overview'&&!editing&&(
+            <div style={{display:'flex',flexDirection:'column',gap:18}}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+                {[['Phone',lead.phone||'—'],['Email',lead.email||'—'],['Address',lead.address||'—'],
+                  ['City/ZIP',`${lead.city} ${lead.zip}`],['Lead source',lead.lead_source||'—'],
+                  ['Created',fmtDateShort(lead.created_at?.split('T')[0])]].map(([k,v])=>(
+                  <div key={k}>
+                    <div style={{fontSize:'var(--text-xs)',color:'var(--text-muted)',fontWeight:600,textTransform:'uppercase',letterSpacing:'.05em'}}>{k}</div>
+                    <div style={{fontSize:'var(--text-md)',color:'var(--navy-900)',fontWeight:600,marginTop:2}}>{v}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{height:1,background:'var(--border)'}}/>
+              <div>
+                <div style={{fontFamily:'var(--font-display)',fontWeight:700,color:'var(--navy-900)',marginBottom:8}}>Update status</div>
+                <Sel value={lead.status} onChange={async e=>{
+                  if(!sb) return;
+                  await sb.from('customers').update({status:e.target.value}).eq('id',lead.id);
+                  onUpdate();
+                }} options={['new lead','quoted','booked','active','inactive','lost']}/>
+              </div>
+            </div>
+          )}
+          {tab==='overview'&&editing&&(
+            <div style={{display:'flex',flexDirection:'column',gap:14}}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+                <Field label="First name"><Input value={form.first_name||''} onChange={e=>setForm(f=>({...f,first_name:e.target.value}))}/></Field>
+                <Field label="Last name"><Input value={form.last_name||''} onChange={e=>setForm(f=>({...f,last_name:e.target.value}))}/></Field>
+                <Field label="Phone"><Input value={form.phone||''} onChange={e=>setForm(f=>({...f,phone:e.target.value}))}/></Field>
+                <Field label="Email"><Input value={form.email||''} onChange={e=>setForm(f=>({...f,email:e.target.value}))}/></Field>
+                <Field label="City"><Input value={form.city||''} onChange={e=>setForm(f=>({...f,city:e.target.value}))}/></Field>
+                <Field label="ZIP"><Input value={form.zip||''} onChange={e=>setForm(f=>({...f,zip:e.target.value}))}/></Field>
+              </div>
+              <Field label="Address"><Input value={form.address||''} onChange={e=>setForm(f=>({...f,address:e.target.value}))}/></Field>
+              <Field label="Status"><Sel value={form.status||'new lead'} onChange={e=>setForm(f=>({...f,status:e.target.value}))} options={['new lead','quoted','booked','active','inactive','lost']}/></Field>
+              <Btn variant="success" onClick={save}>Save changes</Btn>
+            </div>
+          )}
+          {tab==='notes'&&(
+            <div style={{color:'var(--text-muted)',fontSize:'var(--text-sm)',whiteSpace:'pre-wrap'}}>
+              {lead.notes||'No notes yet.'}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Crm({user,onAddLead}) {
+  const [leads,setLeads] = React.useState([]);
+  const [loading,setLoading] = React.useState(true);
+  const [tab,setTab] = React.useState('all');
+  const [sel,setSel] = React.useState(null);
+  const [Toast,toast] = useToast();
+
+  const load = async () => {
+    if(!sb){setLeads([]);setLoading(false);return;}
+    const {data}=await sb.from('customers').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+    setLeads(data||[]);setLoading(false);
+  };
+  React.useEffect(()=>{load();},[]);
+
+  const counts = leads.reduce((a,l)=>{a[l.status]=(a[l.status]||0)+1;return a;},{});
+  const statuses=['new lead','quoted','booked','active','lost'];
+  const tabs=[{id:'all',label:'All',count:leads.length},...statuses.map(s=>({id:s,label:s.charAt(0).toUpperCase()+s.slice(1),count:counts[s]||0}))];
+  const rows = tab==='all'?leads:leads.filter(l=>l.status===tab);
+
+  const cols=[
+    {key:'first_name',header:'Customer',render:(_,r)=><div style={{display:'flex',alignItems:'center',gap:10}}>
+      <Avatar name={`${r.first_name} ${r.last_name}`} size="sm"/>
+      <span style={{fontWeight:600,color:'var(--navy-900)'}}>{r.first_name} {r.last_name}</span></div>},
+    {key:'city',header:'City'},
+    {key:'customer_type',header:'Type'},
+    {key:'lead_source',header:'Source'},
+    {key:'phone',header:'Phone',render:v=>v||<span style={{color:'var(--text-faint)'}}>—</span>},
+    {key:'status',header:'Status',render:v=><Badge status={v}/>},
+    {key:'created_at',header:'Created',align:'right',render:v=><span style={{color:'var(--text-muted)',fontSize:'var(--text-sm)'}}>{fmtDateShort(v?.split('T')[0])}</span>},
+  ];
+
+  if(loading) return <Loading/>;
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:'var(--space-5)'}}>
+      {Toast}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <Tabs value={tab} onChange={setTab} tabs={tabs} style={{flex:1}}/>
+        <div style={{marginLeft:16}}><Btn variant="secondary" size="sm" leading={<I.filter size={14}/>}>Filter</Btn></div>
+      </div>
+      <Table columns={cols} rows={rows} onRowClick={r=>{setSel(r);}}/>
+      {sel&&<CrmDrawer lead={sel} onClose={()=>setSel(null)} onUpdate={()=>{load();setSel(l=>leads.find(x=>x.id===l?.id)||null);}} toast={toast}/>}
+    </div>
+  );
+}
+
+/* ================================================================
+   ADD LEAD FORM
+   ================================================================ */
+function AddLeadForm({user,onClose,onSaved,toast}) {
+  const [f,setF] = React.useState({first_name:'',last_name:'',phone:'',email:'',address:'',city:'Orlando',zip:'',lead_source:'',customer_type:'Residential',notes:'',status:'new lead'});
+  const [saving,setSaving] = React.useState(false);
+  const set = k => e => setF(p=>({...p,[k]:e.target.value}));
+
+  const save = async e => {
+    e.preventDefault();
+    if(!sb){toast('Configure Supabase first','danger');return;}
+    setSaving(true);
+    const {error}=await sb.from('customers').insert({...f,user_id:user.id});
+    setSaving(false);
+    if(!error){toast('Lead added');onSaved();}
+    else toast('Error: '+error.message,'danger');
+  };
+
+  return (
+    <form onSubmit={save} style={{display:'flex',flexDirection:'column',gap:16}}>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+        <Field label="First name *"><Input value={f.first_name} onChange={set('first_name')} placeholder="Maria"/></Field>
+        <Field label="Last name *"><Input value={f.last_name} onChange={set('last_name')} placeholder="Lopez"/></Field>
+        <Field label="Phone"><Input value={f.phone} onChange={set('phone')} placeholder="(407) 555-0123"/></Field>
+        <Field label="Email"><Input value={f.email} onChange={set('email')} type="email" placeholder="maria@email.com"/></Field>
+        <Field label="City"><Input value={f.city} onChange={set('city')}/></Field>
+        <Field label="ZIP"><Input value={f.zip} onChange={set('zip')} placeholder="32789"/></Field>
+      </div>
+      <Field label="Address"><Input value={f.address} onChange={set('address')} placeholder="123 Palm St"/></Field>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+        <Field label="Lead source"><Sel value={f.lead_source} onChange={set('lead_source')} options={['','Google','Facebook','Instagram','Referral','Landing page','Walk-in','Other']}/></Field>
+        <Field label="Customer type"><Sel value={f.customer_type} onChange={set('customer_type')} options={['Residential','Airbnb host','Realtor','Property manager','Commercial']}/></Field>
+      </div>
+      <Field label="Notes"><Input value={f.notes} onChange={set('notes')} multiline rows={3} placeholder="Preferences, gate code, pets…"/></Field>
+      <div style={{display:'flex',gap:10,justifyContent:'flex-end',marginTop:8}}>
+        <Btn variant="ghost" type="button" onClick={onClose}>Cancel</Btn>
+        <Btn variant="primary" type="submit" disabled={saving||!f.first_name}>{saving?'Saving…':'Add lead'}</Btn>
+      </div>
+    </form>
+  );
+}
+
+/* ================================================================
+   QUOTE CALCULATOR
+   ================================================================ */
+const TYPES={'Standard cleaning':{mult:1,fixed:0},'Deep cleaning':{mult:1.5,fixed:0},
+  'Move-in / move-out':{mult:1.6,fixed:0},'Airbnb turnover':{mult:1,fixed:165},'Post-construction':{mult:2,fixed:0}};
+const FREQS={'One-time':0,'Weekly':.15,'Biweekly':.10,'Monthly':.05};
+const ADDONS={'Inside fridge':35,'Inside oven':35,'Interior windows':60,'Laundry':25,'Dishes':15,'Inside cabinets':45,'Garage sweep':30,'Patio cleaning':40};
+
+function Quote({user}) {
+  const [sqft,setSqft]=React.useState(2000);
+  const [beds,setBeds]=React.useState(3);
+  const [baths,setBaths]=React.useState(2);
+  const [type,setType]=React.useState('Deep cleaning');
+  const [freq,setFreq]=React.useState('Biweekly');
+  const [pets,setPets]=React.useState(false);
+  const [addons,setAddons]=React.useState({});
+  const [saved,setSaved]=React.useState(false);
+  const [Toast,toast]=useToast();
+  const [name,setName]=React.useState('');const[phone,setPhone]=React.useState('');const[email,setEmail]=React.useState('');
+
+  const calc = React.useMemo(()=>{
+    const t=TYPES[type];
+    let base=120+sqft*.05+beds*15+baths*20;
+    base=t.fixed?t.fixed+(sqft*.03):base*t.mult;
+    if(pets) base+=20;
+    const addon=Object.keys(addons).filter(k=>addons[k]).reduce((s,k)=>s+ADDONS[k],0);
+    let total=base+addon;
+    const disc=FREQS[freq];
+    const disc2=total*(1-disc);
+    return{low:Math.round(disc2/5)*5,high:Math.round((disc2*1.18)/5)*5,disc,addon};
+  },[sqft,beds,baths,type,freq,pets,addons]);
+
+  const toggle=k=>setAddons(a=>({...a,[k]:!a[k]}));
+
+  const saveQuote = async () => {
+    if(!sb){toast('Configure Supabase first','danger');return;}
+    let cid=null;
+    if(name){
+      const parts=name.trim().split(' ');
+      const {data:c}=await sb.from('customers').insert({
+        user_id:user.id,first_name:parts[0]||'',last_name:parts.slice(1).join(' ')||'',
+        phone,email,status:'quoted',customer_type:'Residential',city:'Orlando'
+      }).select().single();
+      cid=c?.id;
+    }
+    await sb.from('jobs').insert({
+      user_id:user.id,customer_id:cid,service_type:type,
+      price:calc.low,payout:Math.round(calc.low*.6),status:'scheduled'
+    });
+    setSaved(true);toast('Quote saved — lead added to CRM');
+  };
+
+  return (
+    <div style={{display:'grid',gridTemplateColumns:'1.6fr 1fr',gap:'var(--space-6)',alignItems:'start'}}>
+      {Toast}
+      <Card>
+        <CardHeader title="Build a quote" subtitle="Estimate updates live as you fill in the details"/>
+        <div style={{display:'flex',flexDirection:'column',gap:'var(--space-5)'}}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'var(--space-4)'}}>
+            <Field label="Customer name"><Input value={name} onChange={e=>setName(e.target.value)} placeholder="Maria Lopez"/></Field>
+            <Field label="Phone"><Input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="(407) 555-0123"/></Field>
+            <Field label="Email"><Input value={email} onChange={e=>setEmail(e.target.value)} type="email" placeholder="maria@email.com"/></Field>
+            <Field label="Home sq ft"><Input type="number" value={sqft} onChange={e=>setSqft(+e.target.value||0)} min={0}/></Field>
+            <Field label="Bedrooms"><Input type="number" value={beds} onChange={e=>setBeds(+e.target.value||0)} min={0}/></Field>
+            <Field label="Bathrooms"><Input type="number" value={baths} onChange={e=>setBaths(+e.target.value||0)} min={0}/></Field>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'var(--space-4)'}}>
+            <Field label="Cleaning type"><Sel value={type} onChange={e=>setType(e.target.value)} options={Object.keys(TYPES)}/></Field>
+            <Field label="Frequency"><Sel value={freq} onChange={e=>setFreq(e.target.value)} options={Object.keys(FREQS)}/></Field>
+          </div>
+          <div>
+            <div style={{fontFamily:'var(--font-display)',fontWeight:700,fontSize:'var(--text-sm)',color:'var(--navy-900)',marginBottom:12}}>Add-ons</div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px 20px'}}>
+              {Object.keys(ADDONS).map(k=>(
+                <div key={k} style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <Check checked={!!addons[k]} onChange={()=>toggle(k)} label={k}/>
+                  <span style={{fontFamily:'var(--font-mono)',fontSize:'var(--text-sm)',color:'var(--text-muted)'}}>+${ADDONS[k]}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <Check checked={pets} onChange={setPets} label="Pets in home (+$20)"/>
+        </div>
+      </Card>
+      <div style={{position:'sticky',top:'calc(var(--topbar-height) + var(--space-6))',display:'flex',flexDirection:'column',gap:'var(--space-4)'}}>
+        <Card accent>
+          <div style={{fontFamily:'var(--font-display)',fontSize:'var(--text-xs)',fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--accent)'}}>Estimated price</div>
+          <div style={{display:'flex',alignItems:'baseline',gap:8,margin:'8px 0 4px'}}>
+            <span style={{fontFamily:'var(--font-display)',fontWeight:800,fontSize:'var(--text-4xl)',color:'var(--navy-900)',letterSpacing:'-0.02em',fontVariantNumeric:'tabular-nums'}}>{fmt$(calc.low)}</span>
+            <span style={{color:'var(--text-muted)',fontWeight:600}}>– {fmt$(calc.high)}</span>
+          </div>
+          <div style={{fontSize:'var(--text-sm)',color:'var(--text-muted)',marginBottom:14}}>{type} · {freq}</div>
+          <div style={{display:'flex',flexDirection:'column',gap:7,fontSize:'var(--text-sm)',borderTop:'1px solid var(--border)',paddingTop:14}}>
+            {[['Cleaning type',type],[`Add-ons`,calc.addon>0?'+$'+calc.addon:'None'],
+              calc.disc>0?['Frequency discount','−'+Math.round(calc.disc*100)+'%']:null].filter(Boolean).map(([k,v,g])=>(
+              <div key={k} style={{display:'flex',justifyContent:'space-between'}}>
+                <span style={{color:'var(--text-body)'}}>{k}</span>
+                <span style={{fontFamily:'var(--font-mono)',fontWeight:600,color:g?'var(--green-600)':'var(--navy-900)'}}>{v}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:8,marginTop:18}}>
+            <Btn variant="success" fullWidth leading={<I.calendar size={16}/>} onClick={saveQuote} disabled={saved}>
+              {saved?'Quote saved ✓':'Save quote & add to CRM'}
+            </Btn>
+            <Btn variant="secondary" fullWidth leading={<I.mail size={16}/>}>Email this quote</Btn>
+          </div>
+        </Card>
+        <Alert tone="info">Quote is auto-saved to CRM and logged when you click save.</Alert>
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================
+   JOBS SCREEN
+   ================================================================ */
+function Jobs({user}) {
+  const [jobs,setJobs]=React.useState([]);
+  const [loading,setLoading]=React.useState(true);
+  const [showAdd,setShowAdd]=React.useState(false);
+  const [Toast,toast]=useToast();
+  const [customers,setCustomers]=React.useState([]);
+  const [subs,setSubs]=React.useState([]);
+  const [f,setF]=React.useState({customer_id:'',subcontractor_id:'',address:'',service_type:'Standard cleaning',scheduled_date:today(),start_time:'09:00',end_time:'11:00',price:'',payout:'',notes:''});
+  const set=k=>e=>setF(p=>({...p,[k]:e.target.value}));
+
+  const load=async()=>{
+    if(!sb){setJobs([]);setLoading(false);return;}
+    const[{data:j},{data:c},{data:s}]=await Promise.all([
+      sb.from('jobs').select('*,customer:customers(first_name,last_name),sub:subcontractors(name)').eq('user_id',user.id).order('scheduled_date',{ascending:false}),
+      sb.from('customers').select('id,first_name,last_name').eq('user_id',user.id),
+      sb.from('subcontractors').select('id,name').eq('user_id',user.id).eq('status','active'),
+    ]);
+    setJobs(j||[]);setCustomers(c||[]);setSubs(s||[]);setLoading(false);
+  };
+  React.useEffect(()=>{load();},[]);
+
+  const save=async e=>{
+    e.preventDefault();
+    if(!sb) return;
+    const{error}=await sb.from('jobs').insert({...f,user_id:user.id,price:+f.price||0,payout:+f.payout||0,
+      customer_id:f.customer_id||null,subcontractor_id:f.subcontractor_id||null});
+    if(!error){toast('Job added');setShowAdd(false);load();}
+    else toast('Error: '+error.message,'danger');
+  };
+
+  const updateStatus=async(id,status)=>{
+    if(!sb) return;
+    await sb.from('jobs').update({status}).eq('id',id);
+    toast('Status updated');load();
+  };
+
+  const cols=[
+    {key:'scheduled_date',header:'Date',render:(v,r)=><div>
+      <div style={{fontWeight:600,color:'var(--navy-900)'}}>{fmtDate(v)}</div>
+      <div style={{fontSize:'var(--text-xs)',color:'var(--text-muted)'}}>{r.start_time} – {r.end_time}</div></div>},
+    {key:'customer',header:'Customer',render:(_,r)=><span style={{fontWeight:600,color:'var(--navy-900)'}}>{r.customer?`${r.customer.first_name} ${r.customer.last_name}`:'—'}</span>},
+    {key:'address',header:'Address',render:v=><span style={{fontSize:'var(--text-sm)',color:'var(--text-muted)'}}>{v||'—'}</span>},
+    {key:'service_type',header:'Service'},
+    {key:'sub',header:'Sub',render:(_,r)=><div style={{display:'flex',alignItems:'center',gap:7}}>
+      {r.sub&&<Avatar name={r.sub.name} size="xs"/>}<span>{r.sub?.name||'—'}</span></div>},
+    {key:'price',header:'Price',align:'right',render:(v,r)=><div style={{textAlign:'right'}}>
+      <div style={{fontVariantNumeric:'tabular-nums',fontWeight:600,color:'var(--navy-900)'}}>{fmt$(v)}</div>
+      {r.payout>0&&<div style={{fontSize:'var(--text-xs)',color:'var(--green-600)'}}>payout {fmt$(r.payout)}</div>}</div>},
+    {key:'status',header:'Status',render:(v,r)=><div style={{display:'flex',alignItems:'center',gap:8}}>
+      <Badge status={v}/>
+      {v==='scheduled'&&<button onClick={e=>{e.stopPropagation();updateStatus(r.id,'completed');}} style={{border:'none',background:'var(--green-50)',color:'var(--green-700)',borderRadius:'var(--radius-sm)',padding:'2px 8px',fontSize:'var(--text-xs)',fontWeight:700,cursor:'pointer'}}>✓</button>}
+    </div>},
+  ];
+
+  const stats={sched:jobs.filter(j=>j.status==='scheduled').length,prog:jobs.filter(j=>j.status==='in progress').length,done:jobs.filter(j=>j.status==='completed').length};
+
+  if(loading) return <Loading/>;
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:'var(--space-6)'}}>
+      {Toast}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'var(--space-4)'}}>
+        <StatCard label="Scheduled" value={stats.sched} tone="brand" icon={<I.calendar size={18}/>}/>
+        <StatCard label="In progress" value={stats.prog} tone="warning" icon={<I.clock size={18}/>}/>
+        <StatCard label="Completed" value={stats.done} tone="success" icon={<I.check size={18}/>}/>
+        <StatCard label="Total jobs" value={jobs.length} tone="navy" icon={<I.briefcase size={18}/>}/>
+      </div>
+      <Card padding="none">
+        <div style={{padding:'var(--space-5) var(--space-6) 0'}}>
+          <CardHeader title="Job schedule" subtitle={`${jobs.length} jobs`}
+            action={<Btn variant="primary" size="sm" leading={<I.plus size={15}/>} onClick={()=>setShowAdd(true)}>New job</Btn>}/>
+        </div>
+        <Table style={{border:'none',borderRadius:0,boxShadow:'none'}} columns={cols} rows={jobs}/>
+      </Card>
+      <Drawer open={showAdd} onClose={()=>setShowAdd(false)} title="New job">
+        <form onSubmit={save} style={{display:'flex',flexDirection:'column',gap:16}}>
+          <Field label="Customer">
+            <Sel value={f.customer_id} onChange={set('customer_id')}
+              options={[{value:'',label:'— select —'},...customers.map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))]}/>
+          </Field>
+          <Field label="Service address"><Input value={f.address} onChange={set('address')} placeholder="123 Palm St, Orlando"/></Field>
+          <Field label="Service type"><Sel value={f.service_type} onChange={set('service_type')} options={Object.keys(TYPES)}/></Field>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+            <Field label="Date"><Input type="date" value={f.scheduled_date} onChange={set('scheduled_date')}/></Field>
+            <Field label="Start time"><Input type="time" value={f.start_time} onChange={set('start_time')}/></Field>
+            <Field label="Price ($)"><Input type="number" value={f.price} onChange={set('price')} placeholder="240"/></Field>
+            <Field label="Payout ($)"><Input type="number" value={f.payout} onChange={set('payout')} placeholder="144"/></Field>
+          </div>
+          <Field label="Subcontractor">
+            <Sel value={f.subcontractor_id} onChange={set('subcontractor_id')}
+              options={[{value:'',label:'— select —'},...subs.map(s=>({value:s.id,label:s.name}))]}/>
+          </Field>
+          <Field label="Notes"><Input value={f.notes} onChange={set('notes')} multiline/></Field>
+          <Btn variant="primary" type="submit" fullWidth>Create job</Btn>
+        </form>
+      </Drawer>
+    </div>
+  );
+}
+
+/* ================================================================
+   SUBCONTRACTORS SCREEN
+   ================================================================ */
+function Subs({user}) {
+  const [subs,setSubs]=React.useState([]);
+  const [loading,setLoading]=React.useState(true);
+  const [showAdd,setShowAdd]=React.useState(false);
+  const [Toast,toast]=useToast();
+  const [f,setF]=React.useState({name:'',phone:'',email:'',service_area:'',pay_rate:60,pay_rate_type:'percentage',rating:5,notes:''});
+  const set=k=>e=>setF(p=>({...p,[k]:e.target.value}));
+
+  const load=async()=>{
+    if(!sb){setSubs([]);setLoading(false);return;}
+    const{data}=await sb.from('subcontractors').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+    setSubs(data||[]);setLoading(false);
+  };
+  React.useEffect(()=>{load();},[]);
+
+  const save=async e=>{
+    e.preventDefault();
+    if(!sb) return;
+    const{error}=await sb.from('subcontractors').insert({...f,user_id:user.id,pay_rate:+f.pay_rate,rating:+f.rating});
+    if(!error){toast('Subcontractor added');setShowAdd(false);load();}
+    else toast('Error: '+error.message,'danger');
+  };
+
+  const cols=[
+    {key:'name',header:'Name',render:v=><div style={{display:'flex',alignItems:'center',gap:10}}>
+      <Avatar name={v} size="sm"/><span style={{fontWeight:600,color:'var(--navy-900)'}}>{v}</span></div>},
+    {key:'service_area',header:'Service area'},
+    {key:'pay_rate',header:'Pay rate',align:'center',render:(v,r)=><span style={{fontVariantNumeric:'tabular-nums'}}>{v}{r.pay_rate_type==='percentage'?'%':'/hr'}</span>},
+    {key:'jobs_completed',header:'Jobs done',align:'center',render:v=><span style={{fontVariantNumeric:'tabular-nums'}}>{v}</span>},
+    {key:'rating',header:'Rating',align:'center',render:v=><span style={{color:'var(--amber-600)',fontWeight:700}}>★ {v?.toFixed(1)||'5.0'}</span>},
+    {key:'phone',header:'Phone',render:v=>v||'—'},
+    {key:'status',header:'Status',render:v=><Badge status={v==='active'?'active':'inactive'}/>},
+  ];
+
+  if(loading) return <Loading/>;
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:'var(--space-5)'}}>
+      {Toast}
+      <Card padding="none">
+        <div style={{padding:'var(--space-5) var(--space-6) 0'}}>
+          <CardHeader title="Subcontractors" subtitle={`${subs.length} in your network`}
+            action={<Btn variant="primary" size="sm" leading={<I.plus size={15}/>} onClick={()=>setShowAdd(true)}>Add subcontractor</Btn>}/>
+        </div>
+        <Table style={{border:'none',borderRadius:0,boxShadow:'none'}} columns={cols} rows={subs}/>
+      </Card>
+      <Drawer open={showAdd} onClose={()=>setShowAdd(false)} title="Add subcontractor">
+        <form onSubmit={save} style={{display:'flex',flexDirection:'column',gap:16}}>
+          <Field label="Full name *"><Input value={f.name} onChange={set('name')} placeholder="James Carter"/></Field>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+            <Field label="Phone"><Input value={f.phone} onChange={set('phone')} placeholder="(407) 555-0100"/></Field>
+            <Field label="Email"><Input value={f.email} onChange={set('email')} type="email" placeholder="james@email.com"/></Field>
+          </div>
+          <Field label="Service area"><Input value={f.service_area} onChange={set('service_area')} placeholder="Winter Park · Lake Nona"/></Field>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+            <Field label="Pay rate type"><Sel value={f.pay_rate_type} onChange={set('pay_rate_type')} options={['percentage','hourly','flat']}/></Field>
+            <Field label="Pay rate"><Input type="number" value={f.pay_rate} onChange={set('pay_rate')} min={0}/></Field>
+          </div>
+          <Field label="Starting rating (1-5)"><Input type="number" value={f.rating} onChange={set('rating')} min={1} max={5} step={0.1}/></Field>
+          <Field label="Notes"><Input value={f.notes} onChange={set('notes')} multiline/></Field>
+          <Btn variant="primary" type="submit" fullWidth disabled={!f.name}>Add subcontractor</Btn>
+        </form>
+      </Drawer>
+    </div>
+  );
+}
+
+/* ================================================================
+   FINANCIALS SCREEN
+   ================================================================ */
+function Finance({user}) {
+  const [data,setData]=React.useState(null);
+  React.useEffect(()=>{
+    if(!sb){setData({revenue:0,payouts:0,expenses:0,profit:0,byService:[],byCity:[],expCats:[]});return;}
+    async function load(){
+      const uid=user.id;const ms=monthStart();
+      const[{data:jobs},{data:exps}]=await Promise.all([
+        sb.from('jobs').select('price,payout,service_type,customer:customers(city)').eq('user_id',uid).eq('status','completed').gte('scheduled_date',ms),
+        sb.from('expenses').select('amount,category').eq('user_id',uid).gte('expense_date',ms),
+      ]);
+      const revenue=(jobs||[]).reduce((s,j)=>s+(j.price||0),0);
+      const payouts=(jobs||[]).reduce((s,j)=>s+(j.payout||0),0);
+      const expenses=(exps||[]).reduce((s,e)=>s+(e.amount||0),0);
+      const bySvc=(jobs||[]).reduce((a,j)=>{a[j.service_type]=(a[j.service_type]||0)+(j.price||0);return a;},{});
+      const byCity=(jobs||[]).reduce((a,j)=>{const c=j.customer?.city||'Unknown';a[c]=(a[c]||0)+(j.price||0);return a;},{});
+      const byCat=(exps||[]).reduce((a,e)=>{a[e.category]=(a[e.category]||0)+(e.amount||0);return a;},{});
+      const tot=revenue||1;
+      setData({revenue,payouts,expenses,profit:revenue-payouts-expenses,
+        byService:Object.entries(bySvc).map(([l,v])=>({label:l,value:Math.round(v/tot*100),amount:v})),
+        byCity:Object.entries(byCity).map(([l,v])=>({label:l,value:Math.round(v/tot*100),amount:v})),
+        expCats:Object.entries(byCat).map(([l,v])=>({label:l,value:Math.round(v/expenses*100),amount:v})),
+        margin:revenue>0?Math.round((revenue-payouts-expenses)/revenue*100):0});
+    }
+    load().catch(console.error);
+  },[]);
+  if(!data) return <Loading/>;
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:'var(--space-6)'}}>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'var(--space-4)'}}>
+        <StatCard label="Revenue" value={fmt$(data.revenue)} tone="success" icon={<I.dollar size={18}/>}/>
+        <StatCard label="Payouts" value={fmt$(data.payouts)} tone="navy" icon={<I.briefcase size={18}/>}/>
+        <StatCard label="Expenses" value={fmt$(data.expenses)} tone="warning" icon={<I.briefcase size={18}/>}/>
+        <StatCard label="Net profit" value={fmt$(data.profit)} tone="success" icon={<I.trendingUp size={18}/>}
+          hint={`${data.margin}% margin`}/>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'var(--space-5)'}}>
+        <Card>
+          <CardHeader title="Revenue by service" subtitle="This month"/>
+          {data.byService.length===0?<div style={{color:'var(--text-muted)',fontSize:'var(--text-sm)'}}>No completed jobs yet.</div>:
+          <div style={{display:'flex',flexDirection:'column',gap:14}}>
+            {data.byService.map((r,i)=><Meter key={r.label} label={r.label} value={r.value} valueLabel={fmt$(r.amount)} tone={['success','brand','navy','warning','danger'][i%5]}/>)}
+          </div>}
+        </Card>
+        <Card>
+          <CardHeader title="Revenue by city" subtitle="This month"/>
+          {data.byCity.length===0?<div style={{color:'var(--text-muted)',fontSize:'var(--text-sm)'}}>No completed jobs yet.</div>:
+          <div style={{display:'flex',flexDirection:'column',gap:14}}>
+            {data.byCity.map(r=><Meter key={r.label} label={r.label} value={r.value} valueLabel={fmt$(r.amount)} tone="success"/>)}
+          </div>}
+        </Card>
+        <Card>
+          <CardHeader title="Expense breakdown" subtitle="This month"/>
+          {data.expCats.length===0?<div style={{color:'var(--text-muted)',fontSize:'var(--text-sm)'}}>No expenses logged.</div>:
+          <div style={{display:'flex',flexDirection:'column',gap:14}}>
+            {data.expCats.map((r,i)=><Meter key={r.label} label={r.label} value={r.value} valueLabel={fmt$(r.amount)} tone={['navy','brand','warning','danger'][i%4]}/>)}
+          </div>}
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================
+   MARKETING STUDIO
+   ================================================================ */
+const COPY={
+  facebook:(a,t)=>`🧼 ${t} homeowners in Winter Park — your weekends are for relaxing, not scrubbing.\n\nOrlando Cleaning pairs you with a vetted local cleaner who treats your home like their own. Deep clean, recurring, or move-out — booked in 60 seconds.\n\n✅ Background-checked pros\n✅ Flat, upfront pricing\n✅ Satisfaction guaranteed\n\n👉 Get your instant quote today. First recurring clean 20% off.`,
+  instagram:a=>`That just-cleaned feeling, every week. ✨\nServing Winter Park, Lake Nona & Kissimmee. Tap the link for an instant quote — booked in under a minute. 🏡🫧\n\n#OrlandoCleaning #WinterParkFL #LakeNona #MaidService #CleanHomeHappyHome`,
+  gbp:()=>`New customers this month! 🎉 Now booking deep cleans and recurring service across the Orlando metro. Mention this post for 20% off your first recurring clean. Instant online quotes available — no waiting on a callback.`,
+  email:a=>`Hi {{first_name}},\n\nThanks for requesting a quote! Based on your home we estimated $240–$300 for a deep clean. We'd love to get you on the schedule this week.\n\nReply or tap below to pick a time — first recurring clean is 20% off.\n\n— Diana, Orlando Cleaning`,
+  sms:()=>`Hi {{first_name}}! It's Diana from Orlando Cleaning 🧼 Your quote is ready: $240–$300. Want me to hold a Saturday slot? Reply YES and I'll lock it in.`,
+  reel:a=>`[HOOK - 0:00] "I used to spend my entire Saturday cleaning…"\n[PROBLEM - 0:05] Show messy house, tired face\n[SOLUTION - 0:10] Phone tapping the quote form in 60 seconds\n[RESULT - 0:15] Clean home montage + happy family\n[CTA - 0:25] "Link in bio — instant quote, book in 60 seconds"\n[CAPTION] Tag a mom who deserves this 👇 #OrlandoCleaning`,
+};
+const PLATS=[{id:'facebook',label:'Facebook ad'},{id:'instagram',label:'Instagram caption'},{id:'gbp',label:'Google Business post'},{id:'email',label:'Email follow-up'},{id:'sms',label:'SMS'},{id:'reel',label:'Reel script'}];
+
+function Marketing() {
+  const [avatar,setAvatar]=React.useState('Busy working mom');
+  const [service,setService]=React.useState('Deep cleaning');
+  const [tone,setTone]=React.useState('Friendly');
+  const [plat,setPlat]=React.useState('facebook');
+  const [copied,setCopied]=React.useState(false);
+  const content=COPY[plat]?COPY[plat](avatar,tone):'';
+  const copy=()=>{navigator.clipboard.writeText(content).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);});};
+  return (
+    <div style={{display:'grid',gridTemplateColumns:'320px 1fr',gap:'var(--space-6)',alignItems:'start'}}>
+      <Card>
+        <CardHeader title="Campaign setup"/>
+        <div style={{display:'flex',flexDirection:'column',gap:'var(--space-4)'}}>
+          <Field label="Customer avatar"><Sel value={avatar} onChange={e=>setAvatar(e.target.value)} options={['Busy working mom','Airbnb host','Realtor','Property manager','Elderly homeowner','High-income homeowner','Move-out customer','New homeowner']}/></Field>
+          <Field label="Service type"><Sel value={service} onChange={e=>setService(e.target.value)} options={['Standard cleaning','Deep cleaning','Move-out cleaning','Airbnb turnover','Recurring maid service']}/></Field>
+          <Field label="Tone"><Sel value={tone} onChange={e=>setTone(e.target.value)} options={['Professional','Friendly','Urgent','Luxury','Family-focused']}/></Field>
+        </div>
+      </Card>
+      <div style={{display:'flex',flexDirection:'column',gap:'var(--space-4)'}}>
+        <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+          {PLATS.map(p=>{const on=p.id===plat;return(
+            <button key={p.id} onClick={()=>setPlat(p.id)} style={{
+              display:'inline-flex',alignItems:'center',gap:7,padding:'8px 14px',cursor:'pointer',
+              borderRadius:'var(--radius-pill)',fontFamily:'var(--font-display)',fontWeight:600,fontSize:'var(--text-sm)',
+              border:`1px solid ${on?'var(--brand-600)':'var(--border-strong)'}`,
+              background:on?'var(--brand-600)':'var(--surface-card)',color:on?'#fff':'var(--gray-700)'}}>
+              {p.label}
+            </button>
+          );})}
+        </div>
+        <Card>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <Badge tone="brand">{tone}</Badge>
+              <span style={{fontSize:'var(--text-sm)',color:'var(--text-muted)'}}>{avatar} · {service}</span>
+            </div>
+            <Btn variant="ghost" size="sm" leading={<I.copy size={14}/>} onClick={copy}>{copied?'Copied!':'Copy'}</Btn>
+          </div>
+          <div style={{whiteSpace:'pre-wrap',fontSize:'var(--text-md)',lineHeight:1.6,color:'var(--text-body)',
+            background:'var(--gray-50)',border:'1px solid var(--border)',borderRadius:'var(--radius-md)',
+            padding:'var(--space-5)',minHeight:220,fontFamily:'var(--font-body)'}}>
+            {content}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================
+   LOCAL SEO SCREEN
+   ================================================================ */
+const SEO_DATA=[
+  {title:'Local keywords',items:['house cleaning winter park fl','deep cleaning lake nona','move out cleaning orlando','airbnb turnover cleaning kissimmee','recurring maid service windermere','orlando house cleaning service','best cleaning company orlando fl']},
+  {title:'Service area page ideas',items:['House Cleaning in Winter Park','Lake Nona Recurring Maid Service','Move-Out Cleaning in Clermont','Airbnb Cleaning in Kissimmee','Deep Cleaning in Windermere','Post-Construction Cleaning Orlando']},
+  {title:'Blog post ideas',items:['How much does a deep clean cost in Orlando?','7 things to clean before an Airbnb guest checks in','Move-out cleaning checklist for Florida renters','Best maid services in Winter Park 2026','How often should you deep clean your home?']},
+  {title:'Review request messages',items:['Hi {{name}}, thanks for choosing us! A quick Google review helps our small Orlando team a ton 🙏','{{name}}, we hope your home is sparkling! If you loved the clean, would you mind leaving us a quick review? It means the world. [link]']},
+  {title:'Review response templates',items:["Thank you so much {{name}}! We're so glad your home is sparkling clean. We look forward to seeing you again! — Diana & the Orlando Cleaning team","Thanks for the kind words, {{name}}! Background-checked, vetted, and here to serve Orlando homeowners. See you at your next clean! 🏡"]},
+  {title:'Meta titles & descriptions',items:['House Cleaning in Orlando, FL | Vetted Pros | Orlando Cleaning','Deep Cleaning Service Orlando | From $220 | Instant Online Quote','Move-Out Cleaning Orlando | Get Your Deposit Back | Book Today']},
+];
+
+function Seo() {
+  const [area,setArea]=React.useState('All service areas');
+  const [copied,setCopied]=React.useState(null);
+  const copy=(text,id)=>{navigator.clipboard.writeText(text).then(()=>{setCopied(id);setTimeout(()=>setCopied(null),2000);});};
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:'var(--space-6)'}}>
+      <Card accent>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:16}}>
+          <div>
+            <div className="eyebrow">Local SEO studio</div>
+            <div style={{fontFamily:'var(--font-display)',fontWeight:800,fontSize:'var(--text-2xl)',color:'var(--navy-900)',marginTop:4}}>Get found across the Orlando metro</div>
+          </div>
+          <div style={{display:'flex',gap:10}}>
+            <Sel value={area} onChange={e=>setArea(e.target.value)} options={['All service areas','Winter Park','Lake Nona','Kissimmee','Windermere','Clermont']} style={{width:200}}/>
+            <Btn variant="primary" leading={<I.sparkles size={16}/>}>Generate</Btn>
+          </div>
+        </div>
+      </Card>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'var(--space-5)'}}>
+        {SEO_DATA.map(b=>(
+          <Card key={b.title}>
+            <CardHeader title={b.title}/>
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {b.items.map((it,i)=>(
+                <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,
+                  padding:'10px 12px',background:'var(--gray-50)',border:'1px solid var(--border)',
+                  borderRadius:'var(--radius-md)',fontSize:'var(--text-sm)',color:'var(--text-body)'}}>
+                  <span>{it}</span>
+                  <button onClick={()=>copy(it,b.title+i)}
+                    style={{border:'none',background:'none',cursor:'pointer',color:copied===b.title+i?'var(--green-600)':'var(--text-faint)',flexShrink:0,display:'inline-flex'}}>
+                    {copied===b.title+i?<I.check size={15}/>:<I.copy size={15}/>}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================
+   LOGIN SCREEN
+   ================================================================ */
+function Login({onLogin}) {
+  const [email,setEmail]=React.useState('');
+  const [pass,setPass]=React.useState('');
+  const [mode,setMode]=React.useState('login');
+  const [err,setErr]=React.useState('');
+  const [loading,setLoading]=React.useState(false);
+  const configured = !!sb;
+
+  const submit = async e=>{
+    e.preventDefault();
+    if(!configured){
+      setErr('Supabase not configured — set SUPABASE_URL and SUPABASE_ANON_KEY in this file, then refresh.');
+      return;
+    }
+    setLoading(true);setErr('');
+    const fn=mode==='login'?sb.auth.signInWithPassword.bind(sb.auth):sb.auth.signUp.bind(sb.auth);
+    const{error}=await fn({email,password:pass});
+    setLoading(false);
+    if(error)setErr(error.message);
+  };
+
+  return (
+    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',height:'100vh'}}>
+      <div style={{background:'var(--navy-900)',color:'#fff',padding:'56px 64px',display:'flex',flexDirection:'column',justifyContent:'space-between'}}>
+        <Logo size={26} tone="light"/>
+        <div>
+          <div className="eyebrow" style={{color:'var(--brand-300)'}}>Orlando · Winter Park · Lake Nona</div>
+          <h1 style={{color:'#fff',fontSize:40,lineHeight:1.1,margin:'14px 0 16px',letterSpacing:'-0.025em'}}>Grow your cleaning business on autopilot.</h1>
+          <p style={{color:'var(--text-on-navy)',fontSize:17,maxWidth:380,margin:0,lineHeight:1.6}}>Leads, quotes, jobs, subcontractors, finances and local marketing — one clean dashboard.</p>
+        </div>
+        <div style={{display:'flex',gap:28,color:'var(--text-on-navy)',fontSize:'var(--text-sm)'}}>
+          <span><strong style={{color:'#fff',fontFamily:'var(--font-display)'}}>CRM</strong> + Quotes</span>
+          <span><strong style={{color:'#fff',fontFamily:'var(--font-display)'}}>Jobs</strong> + Scheduling</span>
+          <span><strong style={{color:'#fff',fontFamily:'var(--font-display)'}}>Marketing</strong> tools</span>
+        </div>
+      </div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'center',padding:40}}>
+        <div style={{width:360}}>
+          <h2 style={{fontSize:28,marginBottom:6}}>{mode==='login'?'Welcome back':'Create account'}</h2>
+          <p style={{color:'var(--text-muted)',marginBottom:28}}>{mode==='login'?'Sign in to your dashboard.':'Start managing your cleaning business.'}</p>
+          {!configured&&<Alert tone="warning" title="Setup required" style={{marginBottom:16}}>
+            Add your Supabase credentials to this HTML file to enable login. See the setup instructions at the top of the file.
+          </Alert>}
+          {err&&<Alert tone="danger" style={{marginBottom:16}}>{err}</Alert>}
+          <form onSubmit={submit} style={{display:'flex',flexDirection:'column',gap:18}}>
+            <Field label="Email"><Input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="diana@orlandocleaning.co"/></Field>
+            <Field label="Password"><Input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••••"/></Field>
+            <Btn variant="primary" size="lg" fullWidth type="submit" disabled={loading||!email||!pass} trailing={<I.arrowRight size={17}/>}>
+              {loading?'Please wait…':mode==='login'?'Sign in':'Create account'}
+            </Btn>
+          </form>
+          <p style={{color:'var(--text-muted)',fontSize:'var(--text-sm)',marginTop:20,textAlign:'center'}}>
+            {mode==='login'?<>New here? <button onClick={()=>setMode('signup')} style={{color:'var(--brand-600)',fontWeight:600,border:'none',background:'none',cursor:'pointer',fontSize:'inherit'}}>Create an account</button></>
+            :<>Already have an account? <button onClick={()=>setMode('login')} style={{color:'var(--brand-600)',fontWeight:600,border:'none',background:'none',cursor:'pointer',fontSize:'inherit'}}>Sign in</button></>}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================
+   MAIN APP
+   ================================================================ */
+const SCREENS={
+  dashboard:{title:'Dashboard',sub:"Here's how your business is doing today",comp:Dashboard},
+  crm:{title:'Leads & CRM',sub:'Manage customers from first contact to repeat booking',comp:Crm},
+  quote:{title:'Quote calculator',sub:'Build an instant estimate and save it to a lead',comp:Quote},
+  jobs:{title:'Jobs',sub:'Schedule, assign and track every clean',comp:Jobs},
+  subs:{title:'Subcontractors',sub:'Your network of vetted local cleaners',comp:Subs},
+  finance:{title:'Financials',sub:'Revenue, payouts and profit at a glance',comp:Finance},
+  marketing:{title:'Marketing studio',sub:'Generate on-brand local content in seconds',comp:Marketing},
+  seo:{title:'Local SEO',sub:'Rank across the Orlando metro service areas',comp:Seo},
+};
+
+function App() {
+  const [session,setSession]=React.useState(null);
+  const [loading,setLoading]=React.useState(true);
+  const [screen,setScreen]=React.useState('dashboard');
+  const [showAddLead,setShowAddLead]=React.useState(false);
+  const [Toast,toast]=useToast();
+
+  React.useEffect(()=>{
+    if(!sb){setLoading(false);return;}
+    sb.auth.getSession().then(({data:{session}})=>{setSession(session);setLoading(false);});
+    const{data:{subscription}}=sb.auth.onAuthStateChange((_,s)=>setSession(s));
+    return()=>subscription.unsubscribe();
+  },[]);
+
+  if(loading) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh'}}><Spin/></div>;
+  if(!session) return <Login onLogin={()=>{}}/>;
+
+  const s=SCREENS[screen];
+  const Sc=s.comp;
+  const logout=()=>sb&&sb.auth.signOut();
+
+  return (
+    <div style={{display:'flex',height:'100vh',overflow:'hidden'}}>
+      {Toast}
+      <Sidebar active={screen} onNavigate={setScreen} user={session.user} onLogout={logout}/>
+      <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
+        <Topbar title={s.title} subtitle={s.sub} onAddLead={()=>setShowAddLead(true)}/>
+        <main style={{flex:1,overflowY:'auto',padding:'var(--space-7)'}}>
+          <div style={{maxWidth:'var(--content-max)',margin:'0 auto'}}>
+            <Sc user={session.user}/>
+          </div>
+        </main>
+      </div>
+      <Drawer open={showAddLead} onClose={()=>setShowAddLead(false)} title="Add lead">
+        <AddLeadForm user={session.user} onClose={()=>setShowAddLead(false)}
+          onSaved={()=>{setShowAddLead(false);setScreen('crm');}} toast={toast}/>
+      </Drawer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
