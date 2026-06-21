@@ -948,12 +948,89 @@ function Quote({user}) {
 }
 
 /* ================================================================
-   JOBS SCREEN
+   JOBS SCREEN + CALENDAR
    ================================================================ */
+const STATUS_COLOR={scheduled:'var(--brand-600)',completed:'var(--green-600)','in progress':'var(--amber-600)',cancelled:'var(--red-500)'};
+
+function CalendarView({jobs,onDayClick,onJobClick}) {
+  const [cur,setCur]=React.useState(()=>{const d=new Date();return{y:d.getFullYear(),m:d.getMonth()};});
+  const {y,m}=cur;
+  const firstDay=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const todayStr=new Date().toISOString().slice(0,10);
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  const jobsByDate={};
+  (jobs||[]).forEach(j=>{
+    const d=j.scheduled_date?.slice(0,10);
+    if(d){if(!jobsByDate[d])jobsByDate[d]=[];jobsByDate[d].push(j);}
+  });
+
+  const cells=[];
+  for(let i=0;i<firstDay;i++) cells.push(null);
+  for(let d=1;d<=daysInMonth;d++) cells.push(d);
+
+  const pad=n=>String(n).padStart(2,'0');
+  const dateStr=d=>`${y}-${pad(m+1)}-${pad(d)}`;
+
+  return (
+    <Card padding="none">
+      <div style={{padding:'var(--space-5) var(--space-6)',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <div style={{fontFamily:'var(--font-display)',fontWeight:800,fontSize:'var(--text-lg)',color:'var(--navy-900)'}}>
+          {MONTHS[m]} {y}
+        </div>
+        <div style={{display:'flex',gap:8}}>
+          <button onClick={()=>setCur(p=>{const d=new Date(p.y,p.m-1);return{y:d.getFullYear(),m:d.getMonth()};})}
+            style={{border:'1px solid var(--border)',background:'var(--surface-card)',borderRadius:'var(--radius-md)',padding:'6px 12px',cursor:'pointer',fontWeight:600,color:'var(--navy-900)'}}>‹</button>
+          <button onClick={()=>setCur({y:new Date().getFullYear(),m:new Date().getMonth()})}
+            style={{border:'1px solid var(--border)',background:'var(--surface-card)',borderRadius:'var(--radius-md)',padding:'6px 12px',cursor:'pointer',fontWeight:600,color:'var(--navy-900)'}}>Today</button>
+          <button onClick={()=>setCur(p=>{const d=new Date(p.y,p.m+1);return{y:d.getFullYear(),m:d.getMonth()};})}
+            style={{border:'1px solid var(--border)',background:'var(--surface-card)',borderRadius:'var(--radius-md)',padding:'6px 12px',cursor:'pointer',fontWeight:600,color:'var(--navy-900)'}}>›</button>
+        </div>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',borderBottom:'1px solid var(--border)'}}>
+        {DAYS.map(d=><div key={d} style={{padding:'8px 0',textAlign:'center',fontSize:'var(--text-xs)',fontWeight:700,color:'var(--text-muted)',letterSpacing:'.06em',textTransform:'uppercase'}}>{d}</div>)}
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)'}}>
+        {cells.map((d,i)=>{
+          if(!d) return <div key={`e${i}`} style={{minHeight:100,borderRight:'1px solid var(--border)',borderBottom:'1px solid var(--border)',background:'var(--bg-app)'}}/>;
+          const ds=dateStr(d);
+          const dayJobs=jobsByDate[ds]||[];
+          const isToday=ds===todayStr;
+          return (
+            <div key={ds} onClick={()=>onDayClick(ds)}
+              style={{minHeight:100,borderRight:'1px solid var(--border)',borderBottom:'1px solid var(--border)',padding:6,cursor:'pointer',background:isToday?'var(--brand-50)':'var(--surface-card)',transition:'background .15s'}}
+              onMouseEnter={e=>e.currentTarget.style.background=isToday?'var(--brand-100)':'var(--bg-app)'}
+              onMouseLeave={e=>e.currentTarget.style.background=isToday?'var(--brand-50)':'var(--surface-card)'}>
+              <div style={{fontWeight:isToday?800:500,fontSize:'var(--text-sm)',color:isToday?'var(--brand-600)':'var(--navy-900)',marginBottom:4,
+                ...(isToday?{background:'var(--brand-600)',color:'#fff',borderRadius:'50%',width:22,height:22,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12}:{})}}>
+                {d}
+              </div>
+              <div style={{display:'flex',flexDirection:'column',gap:2}}>
+                {dayJobs.slice(0,3).map(j=>(
+                  <div key={j.id} onClick={e=>{e.stopPropagation();onJobClick(j);}}
+                    style={{background:STATUS_COLOR[j.status]||'var(--brand-600)',color:'#fff',borderRadius:3,padding:'2px 5px',fontSize:11,fontWeight:600,
+                      overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',cursor:'pointer'}}>
+                    {j.start_time?.slice(0,5)} {j.customer?`${j.customer.first_name} ${j.customer.last_name}`:j.service_type}
+                  </div>
+                ))}
+                {dayJobs.length>3&&<div style={{fontSize:10,color:'var(--text-muted)',fontWeight:600}}>+{dayJobs.length-3} more</div>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
 function Jobs({user}) {
   const [jobs,setJobs]=React.useState([]);
   const [loading,setLoading]=React.useState(true);
   const [showAdd,setShowAdd]=React.useState(false);
+  const [selJob,setSelJob]=React.useState(null);
+  const [view,setView]=React.useState('calendar');
   const [Toast,toast]=useToast();
   const [customers,setCustomers]=React.useState([]);
   const [subs,setSubs]=React.useState([]);
@@ -984,6 +1061,19 @@ function Jobs({user}) {
     if(!sb) return;
     await sb.from('jobs').update({status}).eq('id',id);
     toast('Status updated');load();
+    setSelJob(null);
+  };
+
+  const deleteJob=async(id)=>{
+    if(!sb||!confirm('Delete this job?')) return;
+    await sb.from('jobs').delete().eq('id',id);
+    toast('Job deleted');load();
+    setSelJob(null);
+  };
+
+  const onDayClick=(ds)=>{
+    setF(p=>({...p,scheduled_date:ds}));
+    setShowAdd(true);
   };
 
   const cols=[
@@ -1006,6 +1096,15 @@ function Jobs({user}) {
 
   const stats={sched:jobs.filter(j=>j.status==='scheduled').length,prog:jobs.filter(j=>j.status==='in progress').length,done:jobs.filter(j=>j.status==='completed').length};
 
+  const ViewToggle=()=>(
+    <div style={{display:'flex',border:'1px solid var(--border)',borderRadius:'var(--radius-md)',overflow:'hidden'}}>
+      {[['calendar','Calendar'],['list','List']].map(([v,l])=>(
+        <button key={v} onClick={()=>setView(v)} style={{padding:'7px 16px',border:'none',cursor:'pointer',fontWeight:600,fontSize:'var(--text-sm)',
+          background:view===v?'var(--navy-900)':'var(--surface-card)',color:view===v?'#fff':'var(--text-muted)',transition:'all .15s'}}>{l}</button>
+      ))}
+    </div>
+  );
+
   if(loading) return <Loading/>;
   return (
     <div style={{display:'flex',flexDirection:'column',gap:'var(--space-6)'}}>
@@ -1016,13 +1115,51 @@ function Jobs({user}) {
         <StatCard label="Completed" value={stats.done} tone="success" icon={<I.check size={18}/>}/>
         <StatCard label="Total jobs" value={jobs.length} tone="navy" icon={<I.briefcase size={18}/>}/>
       </div>
-      <Card padding="none">
-        <div style={{padding:'var(--space-5) var(--space-6) 0'}}>
-          <CardHeader title="Job schedule" subtitle={`${jobs.length} jobs`}
-            action={<Btn variant="primary" size="sm" leading={<I.plus size={15}/>} onClick={()=>setShowAdd(true)}>New job</Btn>}/>
-        </div>
-        <Table style={{border:'none',borderRadius:0,boxShadow:'none'}} columns={cols} rows={jobs}/>
-      </Card>
+
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <ViewToggle/>
+        <Btn variant="primary" size="sm" leading={<I.plus size={15}/>} onClick={()=>{setF(p=>({...p,scheduled_date:today()}));setShowAdd(true);}}>New job</Btn>
+      </div>
+
+      {view==='calendar'
+        ? <CalendarView jobs={jobs} onDayClick={onDayClick} onJobClick={setSelJob}/>
+        : <Card padding="none">
+            <Table style={{border:'none',borderRadius:0,boxShadow:'none'}} columns={cols} rows={jobs} onRowClick={setSelJob}/>
+          </Card>
+      }
+
+      {/* Job detail drawer */}
+      <Drawer open={!!selJob} onClose={()=>setSelJob(null)} title="Job details">
+        {selJob&&<div style={{display:'flex',flexDirection:'column',gap:16}}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+            {[
+              ['Date',fmtDate(selJob.scheduled_date)],
+              ['Time',`${selJob.start_time||'—'} – ${selJob.end_time||'—'}`],
+              ['Customer',selJob.customer?`${selJob.customer.first_name} ${selJob.customer.last_name}`:'—'],
+              ['Subcontractor',selJob.sub?.name||'—'],
+              ['Service',selJob.service_type||'—'],
+              ['Address',selJob.address||'—'],
+              ['Price',fmt$(selJob.price)],
+              ['Payout',fmt$(selJob.payout)],
+            ].map(([k,v])=>(
+              <div key={k}><div style={{fontSize:'var(--text-xs)',color:'var(--text-muted)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em'}}>{k}</div>
+              <div style={{fontWeight:600,color:'var(--navy-900)',marginTop:2}}>{v}</div></div>
+            ))}
+          </div>
+          {selJob.notes&&<div style={{padding:12,background:'var(--bg-app)',borderRadius:'var(--radius-md)',fontSize:'var(--text-sm)',color:'var(--text-body)'}}>{selJob.notes}</div>}
+          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+            <Badge status={selJob.status}/>
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:8,paddingTop:8,borderTop:'1px solid var(--border)'}}>
+            {selJob.status==='scheduled'&&<Btn variant="primary" fullWidth onClick={()=>updateStatus(selJob.id,'in progress')}>Mark in progress</Btn>}
+            {(selJob.status==='scheduled'||selJob.status==='in progress')&&<Btn variant="success" fullWidth onClick={()=>updateStatus(selJob.id,'completed')}>Mark completed</Btn>}
+            {selJob.status!=='cancelled'&&<Btn variant="secondary" fullWidth onClick={()=>updateStatus(selJob.id,'cancelled')}>Cancel job</Btn>}
+            <Btn variant="danger" fullWidth onClick={()=>deleteJob(selJob.id)}>Delete job</Btn>
+          </div>
+        </div>}
+      </Drawer>
+
+      {/* New job drawer */}
       <Drawer open={showAdd} onClose={()=>setShowAdd(false)} title="New job">
         <form onSubmit={save} style={{display:'flex',flexDirection:'column',gap:16}}>
           <Field label="Customer">
