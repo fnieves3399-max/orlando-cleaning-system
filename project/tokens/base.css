@@ -1,0 +1,60 @@
+/* ============================================================
+   BASE — element defaults & utility primitives
+   Applies the tokens to bare HTML so cards/kits look right.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+  color: var(--text-body);
+  background: var(--bg-app);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-heading);
+  color: var(--text-strong);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-snug);
+  margin: 0 0 0.5em;
+}
+h1 { font-size: var(--text-4xl); font-weight: var(--weight-extra); }
+h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-2xl); }
+h4 { font-size: var(--text-xl); }
+h5 { font-size: var(--text-lg); font-weight: var(--weight-semibold); }
+
+p { margin: 0 0 1em; text-wrap: pretty; }
+
+a { color: var(--text-link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Eyebrow / overline label */
+.eyebrow {
+  font-family: var(--font-heading);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* Tabular figures for money/metrics */
+.tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+.figure { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+
+::selection { background: var(--brand-200); color: var(--navy-900); }
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}

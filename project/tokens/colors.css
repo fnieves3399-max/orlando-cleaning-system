@@ -1,0 +1,95 @@
+/* ============================================================
+   COLORS — Orlando Cleaning Growth System
+   Fresh & professional: ocean-blue primary, mint money/positive,
+   deep navy structure, cool-tinted neutrals.
+   ============================================================ */
+
+:root {
+  /* ---- Brand / Tide Blue (primary actions, links, focus) ---- */
+  --brand-50:  #EFF7FE;
+  --brand-100: #DCEEFB;   /* requested "light blue" — tints, chips */
+  --brand-200: #BFE0F7;
+  --brand-300: #8FCAF0;
+  --brand-400: #56B0E8;
+  --brand-500: #2A9BE0;
+  --brand-600: #0E7DC9;   /* PRIMARY */
+  --brand-700: #0A63A0;
+  --brand-800: #0A4F7E;
+  --brand-900: #0C3D60;
+
+  /* ---- Fresh Green (money, success, "active") ---- */
+  --green-50:  #EEFAF3;
+  --green-100: #DAF3E6;
+  --green-200: #B4E6CC;
+  --green-300: #7FD3A8;
+  --green-400: #46BE83;
+  --green-500: #27B978;
+  --green-600: #1FA968;   /* POSITIVE / revenue */
+  --green-700: #178A54;
+  --green-800: #156E45;
+
+  /* ---- Navy / Ink (headers, sidebar, deep structure) ---- */
+  --navy-700: #163A5E;
+  --navy-800: #102C49;
+  --navy-900: #0C2138;    /* darkest — sidebar, headings */
+
+  /* ---- Cool Neutrals (slight blue cast) ---- */
+  --white:    #FFFFFF;
+  --gray-50:  #F6F8FB;
+  --gray-100: #EDF1F6;
+  --gray-200: #DEE5EE;
+  --gray-300: #C7D2DF;
+  --gray-400: #9CACBE;
+  --gray-500: #6E8195;
+  --gray-600: #51647A;
+  --gray-700: #36495D;
+  --gray-800: #233547;
+  --gray-900: #0F1C2B;
+
+  /* ---- Semantic status ---- */
+  --amber-50:  #FEF6E7;
+  --amber-100: #FBE9C2;
+  --amber-500: #E8A93B;
+  --amber-600: #C9881C;   /* warning / pending */
+
+  --red-50:  #FDEDED;
+  --red-100: #F9D5D5;
+  --red-500: #E2574C;
+  --red-600: #CE3A30;     /* danger / lost / canceled */
+
+  /* ============================================================
+     SEMANTIC ALIASES — prefer these in components
+     ============================================================ */
+
+  /* Surfaces */
+  --bg-app:          var(--gray-50);
+  --surface-card:    var(--white);
+  --surface-sunken:  var(--gray-100);
+  --surface-hover:   var(--gray-50);
+  --surface-brand:   var(--brand-50);
+  --surface-navy:    var(--navy-900);
+
+  /* Borders */
+  --border:          var(--gray-200);
+  --border-strong:   var(--gray-300);
+  --border-brand:    var(--brand-200);
+
+  /* Text */
+  --text-strong:     var(--navy-900);
+  --text-body:       var(--gray-700);
+  --text-muted:      var(--gray-500);
+  --text-faint:      var(--gray-400);
+  --text-on-brand:   var(--white);
+  --text-on-navy:    #DCE7F2;
+  --text-link:       var(--brand-700);
+
+  /* Accents */
+  --accent:          var(--brand-600);
+  --accent-hover:    var(--brand-700);
+  --positive:        var(--green-600);
+  --warning:         var(--amber-600);
+  --danger:          var(--red-600);
+
+  /* Focus ring */
+  --ring:            color-mix(in srgb, var(--brand-500) 45%, transparent);
+}

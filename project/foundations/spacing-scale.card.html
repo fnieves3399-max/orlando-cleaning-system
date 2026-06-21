@@ -1,0 +1,20 @@
+<!-- @dsCard group="Spacing" viewport="700x170" name="Spacing Scale" subtitle="4px base grid — --space-1 (4px) through --space-10 (64px)." -->
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin:0; padding:20px; background:var(--surface-card); }
+  .r { display:flex; align-items:center; gap:14px; padding:3px 0; }
+  .r .tok { font-family:var(--font-mono); font-size:11px; color:var(--text-muted); width:150px; flex-shrink:0; }
+  .bar { height:14px; background:var(--brand-200); border-radius:3px; }
+</style></head>
+<body>
+  <div class="r"><span class="tok">--space-1 · 4</span><div class="bar" style="width:var(--space-1)"></div></div>
+  <div class="r"><span class="tok">--space-2 · 8</span><div class="bar" style="width:var(--space-2)"></div></div>
+  <div class="r"><span class="tok">--space-3 · 12</span><div class="bar" style="width:var(--space-3)"></div></div>
+  <div class="r"><span class="tok">--space-4 · 16</span><div class="bar" style="width:var(--space-4)"></div></div>
+  <div class="r"><span class="tok">--space-6 · 24</span><div class="bar" style="width:var(--space-6)"></div></div>
+  <div class="r"><span class="tok">--space-7 · 32</span><div class="bar" style="width:var(--space-7)"></div></div>
+  <div class="r"><span class="tok">--space-9 · 48</span><div class="bar" style="width:var(--space-9)"></div></div>
+  <div class="r"><span class="tok">--space-10 · 64</span><div class="bar" style="width:var(--space-10)"></div></div>
+</body></html>

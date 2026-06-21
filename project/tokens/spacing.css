@@ -1,0 +1,30 @@
+/* ============================================================
+   SPACING & LAYOUT — Orlando Cleaning Growth System
+   4px base grid.
+   ============================================================ */
+
+:root {
+  --space-0:  0;
+  --space-1:  0.25rem;  /* 4 */
+  --space-2:  0.5rem;   /* 8 */
+  --space-3:  0.75rem;  /* 12 */
+  --space-4:  1rem;     /* 16 */
+  --space-5:  1.25rem;  /* 20 */
+  --space-6:  1.5rem;   /* 24 */
+  --space-7:  2rem;     /* 32 */
+  --space-8:  2.5rem;   /* 40 */
+  --space-9:  3rem;     /* 48 */
+  --space-10: 4rem;     /* 64 */
+  --space-12: 6rem;     /* 96 */
+
+  /* Layout primitives */
+  --sidebar-width:  248px;
+  --topbar-height:  64px;
+  --content-max:    1240px;
+  --gutter:         var(--space-6);
+
+  /* Control sizing */
+  --control-h-sm: 32px;
+  --control-h-md: 40px;
+  --control-h-lg: 48px;
+}

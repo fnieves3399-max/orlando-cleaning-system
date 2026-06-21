@@ -1,0 +1,104 @@
+<!-- @dsCard group="App" viewport="1280x800" name="App — Orlando Cleaning Growth System" subtitle="Internal product: login, dashboard, CRM, quote tool, jobs, marketing, SEO" -->
+<!-- @startingPoint section="App" subtitle="Full internal product shell + screens" viewport="1280x800" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Orlando Cleaning Growth System</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg-app); }
+  #root { height: 100vh; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="data.js"></script>
+<script type="text/babel" src="Icons.jsx"></script>
+<script type="text/babel" src="AppShell.jsx"></script>
+<script type="text/babel" src="DashboardScreen.jsx"></script>
+<script type="text/babel" src="CrmScreen.jsx"></script>
+<script type="text/babel" src="QuoteScreen.jsx"></script>
+<script type="text/babel" src="OpsScreens.jsx"></script>
+<script type="text/babel" src="MarketingScreens.jsx"></script>
+<script type="text/babel">
+const NS = window.OrlandoCleaningGrowthSystemDesignSystem_e087c1;
+const { Logo, Button, Field, Input, Alert, Card } = NS;
+const I = window.OCGSIcons;
+const S = window.OCGSScreens;
+const { Sidebar, Topbar } = window.OCGSShell;
+
+const META = {
+  dashboard: ['Dashboard', "Here's how your business is doing today"],
+  crm: ['Leads & CRM', 'Manage customers from first contact to repeat booking'],
+  quote: ['Quote calculator', 'Build an instant estimate and save it to a lead'],
+  jobs: ['Jobs', 'Schedule, assign and track every clean'],
+  subs: ['Subcontractors', 'Your network of vetted local cleaners'],
+  finance: ['Financials', 'Revenue, payouts and profit at a glance'],
+  marketing: ['Marketing studio', 'Generate on-brand local content in seconds'],
+  seo: ['Local SEO', 'Rank across the Orlando metro service areas'],
+};
+
+function Login({ onLogin }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', height: '100vh' }}>
+      <div style={{ background: 'var(--navy-900)', color: '#fff', padding: '56px 64px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Logo variant="full" size={28} tone="light" />
+        <div>
+          <div className="eyebrow" style={{ color: 'var(--brand-300)' }}>Orlando · Winter Park · Lake Nona</div>
+          <h1 style={{ color: '#fff', fontSize: '40px', lineHeight: 1.1, margin: '14px 0 16px', letterSpacing: '-0.02em' }}>Grow your cleaning business on autopilot.</h1>
+          <p style={{ color: 'var(--text-on-navy)', fontSize: '17px', maxWidth: 380, margin: 0 }}>Leads, quotes, jobs, subcontractors, finances and local marketing — one clean dashboard.</p>
+        </div>
+        <div style={{ display: 'flex', gap: 28, color: 'var(--text-on-navy)', fontSize: 'var(--text-sm)' }}>
+          <span><strong style={{ color: '#fff', fontFamily: 'var(--font-display)' }}>312</strong> leads</span>
+          <span><strong style={{ color: '#fff', fontFamily: 'var(--font-display)' }}>$18.2k</strong> this month</span>
+          <span><strong style={{ color: '#fff', fontFamily: 'var(--font-display)' }}>4.9★</strong> avg rating</span>
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
+        <div style={{ width: 360 }}>
+          <h2 style={{ fontSize: '28px', marginBottom: 6 }}>Welcome back</h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: 28 }}>Sign in to your dashboard.</p>
+          <form onSubmit={(e) => { e.preventDefault(); onLogin(); }} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            <Field label="Email"><Input type="email" defaultValue="diana@orlandocleaning.co" leading={<I.mail size={16} />} /></Field>
+            <Field label="Password"><Input type="password" defaultValue="cleanhouse" /></Field>
+            <Button variant="primary" size="lg" fullWidth type="submit" trailingIcon={<I.arrowRight size={17} />}>Sign in</Button>
+          </form>
+          <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', marginTop: 20, textAlign: 'center' }}>New here? <a href="#" style={{ fontWeight: 600 }}>Create an account</a></p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [authed, setAuthed] = React.useState(false);
+  const [screen, setScreen] = React.useState('dashboard');
+  if (!authed) return <Login onLogin={() => setAuthed(true)} />;
+  const [title, subtitle] = META[screen];
+  const Screen = { dashboard: S.Dashboard, crm: S.Crm, quote: S.Quote, jobs: S.Jobs, subs: S.Subs, finance: S.Finance, marketing: S.Marketing, seo: S.Seo }[screen];
+  return (
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      <Sidebar active={screen} onNavigate={setScreen} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <Topbar title={title} subtitle={subtitle} onNewLead={() => setScreen('crm')} />
+        <main style={{ flex: 1, overflowY: 'auto', padding: 'var(--space-7)' }}>
+          <div style={{ maxWidth: 'var(--content-max)', margin: '0 auto' }}>
+            <Screen />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
