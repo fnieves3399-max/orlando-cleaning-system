@@ -1323,61 +1323,353 @@ function Finance({user}) {
 /* ================================================================
    MARKETING STUDIO
    ================================================================ */
-const COPY={
-  facebook:(a,t)=>`🧼 ${t} homeowners in Winter Park — your weekends are for relaxing, not scrubbing.\n\nOrlando Cleaning pairs you with a vetted local cleaner who treats your home like their own. Deep clean, recurring, or move-out — booked in 60 seconds.\n\n✅ Background-checked pros\n✅ Flat, upfront pricing\n✅ Satisfaction guaranteed\n\n👉 Get your instant quote today. First recurring clean 20% off.`,
-  instagram:a=>`That just-cleaned feeling, every week. ✨\nServing Winter Park, Lake Nona & Kissimmee. Tap the link for an instant quote — booked in under a minute. 🏡🫧\n\n#OrlandoCleaning #WinterParkFL #LakeNona #MaidService #CleanHomeHappyHome`,
-  gbp:()=>`New customers this month! 🎉 Now booking deep cleans and recurring service across the Orlando metro. Mention this post for 20% off your first recurring clean. Instant online quotes available — no waiting on a callback.`,
-  email:a=>`Hi {{first_name}},\n\nThanks for requesting a quote! Based on your home we estimated $240–$300 for a deep clean. We'd love to get you on the schedule this week.\n\nReply or tap below to pick a time — first recurring clean is 20% off.\n\n— Diana, Orlando Cleaning`,
-  sms:()=>`Hi {{first_name}}! It's Diana from Orlando Cleaning 🧼 Your quote is ready: $240–$300. Want me to hold a Saturday slot? Reply YES and I'll lock it in.`,
-  reel:a=>`[HOOK - 0:00] "I used to spend my entire Saturday cleaning…"\n[PROBLEM - 0:05] Show messy house, tired face\n[SOLUTION - 0:10] Phone tapping the quote form in 60 seconds\n[RESULT - 0:15] Clean home montage + happy family\n[CTA - 0:25] "Link in bio — instant quote, book in 60 seconds"\n[CAPTION] Tag a mom who deserves this 👇 #OrlandoCleaning`,
+const MKT_TEMPLATES={
+  instagram:{
+    label:'Instagram',color:'#E1306C',limit:2200,
+    hint:'Post to Instagram, then add to Stories',
+    posts:{
+      'Busy working mom':{
+        'Deep cleaning':[
+          `Your Saturday just opened up. 🙌\n\nWe handle the deep clean so you can actually enjoy your weekend. Background-checked pros, flat pricing, booked in 60 seconds.\n\nServing Winter Park · Lake Nona · Kissimmee 🏡\n\n👉 Link in bio for an instant quote\n\n#OrlandoCleaning #DeepClean #WinterParkFL #CleanHome #MaidService #OrlandoMom #LakeNona #HouseCleaningOrlando`,
+          `POV: You booked a deep clean and your whole house is sparkling. ✨\n\nFirst recurring clean 20% off this month. Tap the link in bio — quote in under a minute.\n\n#OrlandoCleaning #CleanHouseHappyLife #WinterPark #Kissimmee #HomeClean #FloridaMoms`,
+        ],
+        'Standard cleaning':[
+          `That fresh-clean smell every single week. 🫧\n\nRecurring maid service starting at $120. Vetted local cleaners, no contracts.\n\nWinter Park · Lake Nona · Windermere\n\n#OrlandoCleaning #RecurringCleaning #MaidService #OrlandoFL #CleanHome`,
+        ],
+        'Airbnb turnover':[
+          `Airbnb hosts — we've got your turnovers covered. 🏡✅\n\nSame-day availability, linen swap, restocking. Your guests will leave 5-star reviews every time.\n\nOrlando · Kissimmee · Lake Nona\n\n#AirbnbCleaning #OrlandoAirbnb #VacationRentalCleaning #KissimmeeFL #ShortTermRental`,
+        ],
+      },
+      'Airbnb host':{
+        'Airbnb turnover':[
+          `Your guests deserve a 5-star clean. ⭐⭐⭐⭐⭐\n\nWe specialize in Airbnb turnovers across the Orlando metro — same-day, reliable, every time. Linen swap included.\n\nLink in bio → instant quote.\n\n#AirbnbHost #OrlandoAirbnb #VacationRental #KissimmeeVacation #AirbnbCleaning #ShortTermRental`,
+        ],
+        'Deep cleaning':[
+          `Between guests? Book a deep clean and reset your property. 🏠✨\n\nWe serve Kissimmee, Lake Nona & all of Orlando. Flat pricing, no surprises.\n\n#AirbnbOrlando #VacationRentalTips #OrlandoCleaning #KissimmeeFlorida`,
+        ],
+      },
+      'Realtor':{
+        'Move-in / move-out':[
+          `Listing a home? A move-out clean closes deals faster. 🏡\n\nWe work with Orlando realtors to get homes show-ready fast. Deep clean, windows, garage — all included.\n\nDM or link in bio.\n\n#OrlandoRealEstate #HomeStaging #MovingOut #OrlandoRealtor #CleanHome #WinterParkRealEstate`,
+        ],
+      },
+    },
+  },
+  facebook:{
+    label:'Facebook',color:'#1877F2',limit:63206,
+    hint:'Post to your Facebook business page',
+    posts:{
+      'Busy working mom':{
+        'Deep cleaning':[
+          `🧼 Tired of spending your weekend scrubbing? Let us handle it.\n\nOrlando Cleaning sends background-checked, vetted local cleaners to your home — deep clean, recurring, or move-out. Flat, upfront pricing. Booked in 60 seconds online.\n\n✅ No contracts\n✅ Satisfaction guaranteed\n✅ Serving Winter Park, Lake Nona, Kissimmee & more\n\n👉 Get your instant quote: [your link]\n\nFirst recurring clean is 20% off this month. Limited spots available.`,
+          `Working full-time + keeping a clean house = impossible. 😅\n\nThat's why hundreds of Orlando families trust us for their weekly and biweekly cleans. Background-checked pros, flat pricing, no contracts.\n\nComment "QUOTE" below and I'll send you a personalized estimate! 👇`,
+        ],
+        'Airbnb turnover':[
+          `Kissimmee & Orlando Airbnb hosts — are your turnovers stressing you out?\n\nWe specialize in same-day Airbnb turnovers. Linen swap, restocking, full clean between guests. Your 5-star reviews depend on it.\n\n📞 Call or message us to get on our roster.\n✅ Reliable · Fast · Vetted cleaners`,
+        ],
+      },
+      'Airbnb host':{
+        'Airbnb turnover':[
+          `Orlando & Kissimmee Airbnb hosts — we've got your turnovers covered. 🏡\n\nOur team specializes in short-term rental turnovers: full clean, linen swap, restocking, and a pre-checkout inspection photo sent to you.\n\nFlat rate pricing. Same-day availability. No contracts.\n\n👉 Message us or visit [your link] for a quote.\n\n#OrlandoAirbnb #VacationRental #KissimmeeFL`,
+        ],
+      },
+      'Realtor':{
+        'Move-in / move-out':[
+          `Realtors in the Orlando metro — we make your listings shine. 🏠\n\nOur move-out cleans are thorough, fast, and priced for volume if you have multiple listings. We cover Winter Park, Lake Nona, Windermere, Clermont, and Kissimmee.\n\nLet's set up a referral arrangement. DM me or call (407) 000-0000.\n\n✅ Reliable · Insured · Same-week availability`,
+        ],
+      },
+    },
+  },
+  gbp:{
+    label:'Google Business',color:'#34A853',limit:1500,
+    hint:'Post to your Google Business Profile weekly',
+    posts:{
+      'Busy working mom':{
+        'Deep cleaning':[
+          `Now booking deep cleans across the Orlando metro! 🏡✨\n\nServing Winter Park, Lake Nona, Kissimmee, Windermere & Clermont. Background-checked cleaners, flat pricing, instant online quotes.\n\nMention this post for 20% off your first recurring clean. Book online — no waiting for a callback.`,
+          `Spring cleaning season is here and our schedule is filling fast.\n\nWe offer standard cleans, deep cleans, move-out cleans, and Airbnb turnovers across Orlando. Vetted local pros, satisfaction guaranteed.\n\nGet your instant quote at [your link].`,
+        ],
+      },
+      'Airbnb host':{
+        'Airbnb turnover':[
+          `Airbnb & VRBO hosts in Orlando and Kissimmee — we specialize in same-day turnovers.\n\nFull clean + linen swap + restocking. Reliable team, flat rates, and availability updates. Keep your calendar full and your reviews 5-star.\n\nCall or message us to get on our weekly roster.`,
+        ],
+      },
+    },
+  },
+  story:{
+    label:'Instagram Story',color:'#833AB4',limit:150,
+    hint:'Share as an Instagram or Facebook Story',
+    posts:{
+      'Busy working mom':{
+        'Deep cleaning':[
+          `Swipe up for an instant quote 🧼\n→ Deep clean from $220\n→ Booked in 60 seconds\n→ Winter Park · Lake Nona · Kissimmee`,
+          `Your home. Sparkling clean. 🏡✨\nFirst clean 20% off\nTap to book →`,
+        ],
+        'Standard cleaning':[
+          `Recurring cleaning starting at $120/visit 🫧\nNo contracts · Cancel anytime\nTap to get your quote →`,
+        ],
+      },
+    },
+  },
+  email:{
+    label:'Email',color:'var(--navy-900)',limit:99999,
+    hint:'Send via Gmail, Mailchimp, or paste into your email app',
+    posts:{
+      'Busy working mom':{
+        'Deep cleaning':[
+          `Subject: Your quote from Orlando Cleaning 🏡\n\nHi {{first_name}},\n\nThanks for reaching out! Based on what you shared, we'd estimate $240–$300 for a deep clean of your home.\n\nHere's what's included:\n• All bedrooms and bathrooms\n• Kitchen (appliance exteriors, counters, sink)\n• Vacuuming and mopping throughout\n• Dusting all surfaces\n\nIf you'd like to add inside oven, inside fridge, or interior windows, just let me know and I'll update your quote.\n\nI have availability this week — reply to this email or tap below to pick a time.\n\nFirst recurring clean is 20% off if you want to set up a weekly or biweekly schedule.\n\n— Diana\nOrlando Cleaning | (407) 000-0000`,
+        ],
+      },
+      'Airbnb host':{
+        'Airbnb turnover':[
+          `Subject: Airbnb turnover service for your Orlando/Kissimmee property\n\nHi {{first_name}},\n\nI run a cleaning team that specializes in Airbnb and short-term rental turnovers across the Orlando metro.\n\nHere's how we work:\n• You send us your checkout/check-in times\n• We clean, swap linens, and restock between guests\n• You get a photo report when we're done\n• Flat rate pricing — no surprises\n\nWe currently serve Kissimmee, Lake Nona, Orlando, and Windermere.\n\nWant to get on our roster? Reply here or call (407) 000-0000.\n\n— Diana\nOrlando Cleaning`,
+        ],
+      },
+    },
+  },
+  sms:{
+    label:'SMS',color:'var(--green-600)',limit:160,
+    hint:'Send via your phone or a tool like OpenPhone',
+    posts:{
+      'Busy working mom':{
+        'Deep cleaning':[
+          `Hi {{first_name}}! It's Diana from Orlando Cleaning 🧼 Your quote is ready: $240–$300 for a deep clean. Want me to hold a spot this week? Reply YES and I'll send times.`,
+          `Hey {{first_name}}, following up on your quote from Orlando Cleaning! We have Saturday morning open. Deep clean $240. Interested? Reply YES 🏡`,
+        ],
+      },
+      'Airbnb host':{
+        'Airbnb turnover':[
+          `Hi {{first_name}}, it's Diana from Orlando Cleaning. We specialize in Airbnb turnovers in your area — same-day available. Want a flat-rate quote? Just reply YES.`,
+        ],
+      },
+    },
+  },
+  reel:{
+    label:'Reel / TikTok',color:'#000000',limit:2200,
+    hint:'Film this script and post to Reels or TikTok',
+    posts:{
+      'Busy working mom':{
+        'Deep cleaning':[
+          `🎬 REEL SCRIPT — "Before & After Deep Clean"\n\n[0:00 - HOOK]\nShow messy kitchen counter. Text on screen: "My house before Orlando Cleaning showed up…"\n\n[0:03 - TRANSFORMATION]\nSpeed-cut: Cleaner wiping counters, mopping floors, making beds. Satisfying close-ups.\n\n[0:12 - REVEAL]\nClean, sparkling home. Owner walks in, big smile.\n\n[0:16 - CTA]\nText: "Instant quote in 60 seconds. Link in bio." Voice: "Serving Winter Park, Lake Nona, and Kissimmee."\n\n📝 CAPTION:\nBefore vs. after never gets old ✨🧹 Tag someone who needs this!\n#OrlandoCleaning #CleanTok #HouseClean #WinterPark #DeepClean #Satisfying`,
+          `🎬 REEL SCRIPT — "How I Stopped Cleaning My Own House"\n\n[0:00 - HOOK]\nWalking into messy living room, exhausted look. Text: "I used to spend ALL of Saturday cleaning…"\n\n[0:04]\nCut to phone — tapping through quote form in seconds.\n\n[0:08]\nFast-forward: Cleaner arrives, cleans, leaves. Home looks amazing.\n\n[0:14 - CTA]\n"Now my Saturdays look like this" — show family relaxing, coffee, park.\nText: "Book online. 60 seconds. Link in bio."\n\n📝 CAPTION:\nMy Saturday mornings changed completely once I started using Orlando Cleaning. 🏡✨ Quote online in 60 seconds.\n#CleanTok #MomHacks #OrlandoFL #HouseCleaningTips #WinterParkMom`,
+        ],
+      },
+      'Airbnb host':{
+        'Airbnb turnover':[
+          `🎬 REEL SCRIPT — "5-Star Airbnb Turnover in 90 Minutes"\n\n[0:00 - HOOK]\nShowcase of messy vacation rental post-checkout. Text: "Checkout at 11. Check-in at 2."\n\n[0:04]\nOrlando Cleaning team arrives. Time-lapse of full turnover.\n\n[0:12]\nFresh linens, restocked toiletries, spotless kitchen.\n\n[0:18 - RESULT]\nNext guests checking in, smiling. 5-star review notification pops up.\n\n[0:22 - CTA]\n"Airbnb hosts in Orlando & Kissimmee — DM us to get on our roster."\n\n📝 CAPTION:\nYour guests deserve a 5-star clean every time. ⭐ We handle Airbnb turnovers across Orlando, Kissimmee & Lake Nona.\n#AirbnbHost #VacationRental #OrlandoAirbnb #KissimmeeFL #CleanTok`,
+        ],
+      },
+    },
+  },
 };
-const PLATS=[{id:'facebook',label:'Facebook ad'},{id:'instagram',label:'Instagram caption'},{id:'gbp',label:'Google Business post'},{id:'email',label:'Email follow-up'},{id:'sms',label:'SMS'},{id:'reel',label:'Reel script'}];
+
+const WEEKLY_SCHEDULE=[
+  {day:'Monday',plat:'instagram',label:'Instagram Post',tip:'Best time: 6–9 AM or 7–9 PM'},
+  {day:'Tuesday',plat:'facebook',label:'Facebook Post',tip:'Best time: 1–4 PM'},
+  {day:'Wednesday',plat:'story',label:'Instagram Story',tip:'Best time: 8–10 AM'},
+  {day:'Thursday',plat:'gbp',label:'Google Business Post',tip:'Post weekly for SEO boost'},
+  {day:'Friday',plat:'instagram',label:'Instagram Post',tip:'Best time: 11 AM – 1 PM'},
+  {day:'Saturday',plat:'reel',label:'Reel / TikTok',tip:'Weekends get 2x more views'},
+  {day:'Sunday',plat:'sms',label:'SMS follow-up',tip:'Send to leads from this week'},
+];
 
 function Marketing() {
   const [avatar,setAvatar]=React.useState('Busy working mom');
   const [service,setService]=React.useState('Deep cleaning');
-  const [tone,setTone]=React.useState('Friendly');
-  const [plat,setPlat]=React.useState('facebook');
+  const [plat,setPlat]=React.useState('instagram');
+  const [varIdx,setVarIdx]=React.useState(0);
   const [copied,setCopied]=React.useState(false);
-  const content=COPY[plat]?COPY[plat](avatar,tone):'';
-  const copy=()=>{navigator.clipboard.writeText(content).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);});};
+  const [activeTab,setActiveTab]=React.useState('generator');
+
+  const platCfg=MKT_TEMPLATES[plat]||MKT_TEMPLATES.instagram;
+  const variants=(platCfg.posts[avatar]||{})[service]||(Object.values(platCfg.posts)[0]||{})[service]||['No template yet for this combination — try a different platform or service.'];
+  const idx=Math.min(varIdx,variants.length-1);
+  const content=variants[idx]||'';
+  const charCount=content.length;
+  const overLimit=platCfg.limit&&charCount>platCfg.limit;
+
+  const copy=()=>{
+    navigator.clipboard.writeText(content).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);});
+  };
+
+  const AVATARS=['Busy working mom','Airbnb host','Realtor','Property manager','High-income homeowner','Move-out customer'];
+  const SERVICES=['Standard cleaning','Deep cleaning','Move-in / move-out','Airbnb turnover','Recurring maid service'];
+
   return (
-    <div style={{display:'grid',gridTemplateColumns:'320px 1fr',gap:'var(--space-6)',alignItems:'start'}}>
-      <Card>
-        <CardHeader title="Campaign setup"/>
-        <div style={{display:'flex',flexDirection:'column',gap:'var(--space-4)'}}>
-          <Field label="Customer avatar"><Sel value={avatar} onChange={e=>setAvatar(e.target.value)} options={['Busy working mom','Airbnb host','Realtor','Property manager','Elderly homeowner','High-income homeowner','Move-out customer','New homeowner']}/></Field>
-          <Field label="Service type"><Sel value={service} onChange={e=>setService(e.target.value)} options={['Standard cleaning','Deep cleaning','Move-out cleaning','Airbnb turnover','Recurring maid service']}/></Field>
-          <Field label="Tone"><Sel value={tone} onChange={e=>setTone(e.target.value)} options={['Professional','Friendly','Urgent','Luxury','Family-focused']}/></Field>
-        </div>
-      </Card>
-      <div style={{display:'flex',flexDirection:'column',gap:'var(--space-4)'}}>
-        <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-          {PLATS.map(p=>{const on=p.id===plat;return(
-            <button key={p.id} onClick={()=>setPlat(p.id)} style={{
-              display:'inline-flex',alignItems:'center',gap:7,padding:'8px 14px',cursor:'pointer',
-              borderRadius:'var(--radius-pill)',fontFamily:'var(--font-display)',fontWeight:600,fontSize:'var(--text-sm)',
-              border:`1px solid ${on?'var(--brand-600)':'var(--border-strong)'}`,
-              background:on?'var(--brand-600)':'var(--surface-card)',color:on?'#fff':'var(--gray-700)'}}>
-              {p.label}
-            </button>
-          );})}
-        </div>
-        <Card>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-            <div style={{display:'flex',alignItems:'center',gap:10}}>
-              <Badge tone="brand">{tone}</Badge>
-              <span style={{fontSize:'var(--text-sm)',color:'var(--text-muted)'}}>{avatar} · {service}</span>
-            </div>
-            <Btn variant="ghost" size="sm" leading={<I.copy size={14}/>} onClick={copy}>{copied?'Copied!':'Copy'}</Btn>
-          </div>
-          <div style={{whiteSpace:'pre-wrap',fontSize:'var(--text-md)',lineHeight:1.6,color:'var(--text-body)',
-            background:'var(--gray-50)',border:'1px solid var(--border)',borderRadius:'var(--radius-md)',
-            padding:'var(--space-5)',minHeight:220,fontFamily:'var(--font-body)'}}>
-            {content}
-          </div>
-        </Card>
+    <div style={{display:'flex',flexDirection:'column',gap:'var(--space-5)'}}>
+      {/* Tab toggle */}
+      <div style={{display:'flex',gap:8,borderBottom:'2px solid var(--border)',paddingBottom:0}}>
+        {[['generator','Content generator'],['schedule','Weekly schedule']].map(([id,label])=>(
+          <button key={id} onClick={()=>setActiveTab(id)} style={{
+            padding:'10px 20px',border:'none',background:'none',cursor:'pointer',fontFamily:'var(--font-display)',
+            fontWeight:700,fontSize:'var(--text-sm)',color:activeTab===id?'var(--brand-600)':'var(--text-muted)',
+            borderBottom:activeTab===id?'2px solid var(--brand-600)':'2px solid transparent',marginBottom:-2,transition:'all .15s'}}>
+            {label}
+          </button>
+        ))}
       </div>
+
+      {activeTab==='generator'&&(
+        <div style={{display:'grid',gridTemplateColumns:'280px 1fr',gap:'var(--space-5)',alignItems:'start'}}>
+          {/* Setup panel */}
+          <div style={{display:'flex',flexDirection:'column',gap:'var(--space-4)'}}>
+            <Card>
+              <CardHeader title="Settings"/>
+              <div style={{display:'flex',flexDirection:'column',gap:14}}>
+                <Field label="Target customer"><Sel value={avatar} onChange={e=>{setAvatar(e.target.value);setVarIdx(0);}} options={AVATARS}/></Field>
+                <Field label="Service"><Sel value={service} onChange={e=>{setService(e.target.value);setVarIdx(0);}} options={SERVICES}/></Field>
+              </div>
+            </Card>
+            <Card>
+              <CardHeader title="Where to post" subtitle={platCfg.hint}/>
+              <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                {Object.entries(MKT_TEMPLATES).map(([id,cfg])=>(
+                  <button key={id} onClick={()=>{setPlat(id);setVarIdx(0);}} style={{
+                    display:'flex',alignItems:'center',gap:10,padding:'9px 12px',border:`1px solid ${plat===id?cfg.color:'var(--border)'}`,
+                    borderRadius:'var(--radius-md)',background:plat===id?cfg.color+'18':'var(--surface-card)',
+                    cursor:'pointer',textAlign:'left',transition:'all .15s'}}>
+                    <div style={{width:10,height:10,borderRadius:'50%',background:cfg.color,flexShrink:0}}/>
+                    <span style={{fontWeight:600,fontSize:'var(--text-sm)',color:plat===id?cfg.color:'var(--navy-900)'}}>{cfg.label}</span>
+                  </button>
+                ))}
+              </div>
+            </Card>
+          </div>
+
+          {/* Content panel */}
+          <div style={{display:'flex',flexDirection:'column',gap:'var(--space-4)'}}>
+            <Card>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+                <div style={{display:'flex',alignItems:'center',gap:10}}>
+                  <div style={{width:12,height:12,borderRadius:'50%',background:platCfg.color}}/>
+                  <span style={{fontFamily:'var(--font-display)',fontWeight:700,color:'var(--navy-900)'}}>{platCfg.label}</span>
+                  <span style={{fontSize:'var(--text-sm)',color:'var(--text-muted)'}}>· {avatar} · {service}</span>
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <span style={{fontSize:'var(--text-xs)',color:overLimit?'var(--red-500)':'var(--text-faint)',fontVariantNumeric:'tabular-nums'}}>
+                    {charCount}{platCfg.limit<99999?` / ${platCfg.limit}`:''}
+                  </span>
+                  <Btn variant={copied?'success':'ghost'} size="sm" leading={copied?<I.check size={14}/>:<I.copy size={14}/>} onClick={copy}>
+                    {copied?'Copied!':'Copy'}
+                  </Btn>
+                </div>
+              </div>
+              <div style={{whiteSpace:'pre-wrap',fontSize:'var(--text-md)',lineHeight:1.7,color:'var(--text-body)',
+                background:'var(--gray-50)',border:`1px solid ${overLimit?'var(--red-300)':'var(--border)'}`,
+                borderRadius:'var(--radius-md)',padding:'var(--space-5)',minHeight:260,fontFamily:'var(--font-body)'}}>
+                {content}
+              </div>
+              {variants.length>1&&(
+                <div style={{display:'flex',alignItems:'center',gap:10,marginTop:14}}>
+                  <span style={{fontSize:'var(--text-sm)',color:'var(--text-muted)',fontWeight:600}}>Variation:</span>
+                  {variants.map((_,i)=>(
+                    <button key={i} onClick={()=>setVarIdx(i)} style={{
+                      width:28,height:28,borderRadius:'50%',border:`2px solid ${varIdx===i?platCfg.color:'var(--border)'}`,
+                      background:varIdx===i?platCfg.color:'var(--surface-card)',color:varIdx===i?'#fff':'var(--text-muted)',
+                      cursor:'pointer',fontWeight:700,fontSize:'var(--text-xs)'}}>
+                      {i+1}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </Card>
+            <Card>
+              <CardHeader title="How to post" subtitle={platCfg.label}/>
+              <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                {plat==='instagram'&&[
+                  '1. Open Instagram on your phone',
+                  '2. Tap + → Post → select your before/after photo or clean home photo',
+                  '3. Paste the caption above into the caption field',
+                  '4. Add location: Orlando, FL',
+                  '5. Tap Share',
+                ].map((s,i)=><div key={i} style={{fontSize:'var(--text-sm)',color:'var(--text-body)',padding:'6px 0',borderBottom:i<4?'1px solid var(--border)':''}}>{s}</div>)}
+                {plat==='facebook'&&[
+                  '1. Open Facebook and go to your business page',
+                  '2. Click "Write something…" in the post box',
+                  '3. Paste the content above',
+                  '4. Add a clean home photo for 3x more reach',
+                  '5. Click Publish (or Schedule for later)',
+                ].map((s,i)=><div key={i} style={{fontSize:'var(--text-sm)',color:'var(--text-body)',padding:'6px 0',borderBottom:i<4?'1px solid var(--border)':''}}>{s}</div>)}
+                {plat==='gbp'&&[
+                  '1. Go to business.google.com',
+                  '2. Click "Add update" → "Add post"',
+                  '3. Paste the content above',
+                  '4. Add a photo of your work',
+                  '5. Click Publish — posts weekly = SEO boost',
+                ].map((s,i)=><div key={i} style={{fontSize:'var(--text-sm)',color:'var(--text-body)',padding:'6px 0',borderBottom:i<4?'1px solid var(--border)':''}}>{s}</div>)}
+                {plat==='story'&&[
+                  '1. Open Instagram → tap your profile circle (+ Story)',
+                  '2. Choose a photo or use a solid color background',
+                  '3. Add text from above using the text tool',
+                  '4. Add a "Link" sticker pointing to your quote form',
+                  '5. Tap Share to Story',
+                ].map((s,i)=><div key={i} style={{fontSize:'var(--text-sm)',color:'var(--text-body)',padding:'6px 0',borderBottom:i<4?'1px solid var(--border)':''}}>{s}</div>)}
+                {plat==='email'&&[
+                  '1. Open Gmail or your email app',
+                  '2. Replace {{first_name}} with the customer\'s name',
+                  '3. Add your real phone number and booking link',
+                  '4. Send within 1 hour of receiving a lead for best results',
+                ].map((s,i)=><div key={i} style={{fontSize:'var(--text-sm)',color:'var(--text-body)',padding:'6px 0',borderBottom:i<3?'1px solid var(--border)':''}}>{s}</div>)}
+                {plat==='sms'&&[
+                  '1. Replace {{first_name}} with the customer\'s name',
+                  '2. Send within 5 minutes of a new lead for best conversion',
+                  '3. Use OpenPhone, Google Voice, or your regular texting app',
+                  '4. Keep it under 160 characters for one SMS credit',
+                ].map((s,i)=><div key={i} style={{fontSize:'var(--text-sm)',color:'var(--text-body)',padding:'6px 0',borderBottom:i<3?'1px solid var(--border)':''}}>{s}</div>)}
+                {plat==='reel'&&[
+                  '1. Film the scenes described in the script above',
+                  '2. Edit in CapCut (free) or Instagram\'s built-in editor',
+                  '3. Use trending audio from Instagram\'s music library',
+                  '4. Post to Reels and cross-share to TikTok',
+                  '5. Paste the caption (below the script) when posting',
+                ].map((s,i)=><div key={i} style={{fontSize:'var(--text-sm)',color:'var(--text-body)',padding:'6px 0',borderBottom:i<4?'1px solid var(--border)':''}}>{s}</div>)}
+              </div>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {activeTab==='schedule'&&(
+        <div style={{display:'flex',flexDirection:'column',gap:'var(--space-4)'}}>
+          <Card accent>
+            <div style={{fontFamily:'var(--font-display)',fontWeight:800,fontSize:'var(--text-xl)',color:'var(--navy-900)',marginBottom:6}}>Your weekly posting plan</div>
+            <div style={{color:'var(--text-muted)',fontSize:'var(--text-sm)'}}>Post consistently to grow your local audience and get more leads. One post per day is enough — copy from the generator tab.</div>
+          </Card>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'var(--space-3)'}}>
+            {WEEKLY_SCHEDULE.map(({day,plat:p,label,tip})=>{
+              const cfg=MKT_TEMPLATES[p];
+              return (
+                <div key={day} style={{background:'var(--surface-card)',border:'1px solid var(--border)',borderRadius:'var(--radius-lg)',padding:'var(--space-4)',display:'flex',flexDirection:'column',gap:8}}>
+                  <div style={{fontSize:'var(--text-xs)',fontWeight:700,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'.06em'}}>{day}</div>
+                  <div style={{display:'flex',alignItems:'center',gap:6}}>
+                    <div style={{width:10,height:10,borderRadius:'50%',background:cfg.color,flexShrink:0}}/>
+                    <span style={{fontWeight:700,fontSize:'var(--text-sm)',color:'var(--navy-900)'}}>{cfg.label}</span>
+                  </div>
+                  <div style={{fontSize:'var(--text-xs)',color:'var(--text-muted)',lineHeight:1.4}}>{tip}</div>
+                  <button onClick={()=>{setPlat(p);setVarIdx(0);setActiveTab('generator');}}
+                    style={{border:'none',background:cfg.color,color:'#fff',borderRadius:'var(--radius-sm)',padding:'5px 10px',
+                      fontSize:'var(--text-xs)',fontWeight:700,cursor:'pointer',marginTop:'auto'}}>
+                    Generate →
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+          <Card>
+            <CardHeader title="Hashtag bank" subtitle="Copy and reuse these weekly"/>
+            <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
+              {['#OrlandoCleaning','#WinterParkFL','#LakeNona','#Kissimmee','#OrlandoFL','#MaidService','#HouseCleaningOrlando','#DeepClean','#RecurringCleaning','#AirbnbCleaning','#OrlandoMom','#CleanHome','#CleanTok','#FloridaHome','#HomeClean','#MovingOrlando','#WindermereFL','#Clermont','#OrlandoBusiness','#SmallBusinessOrlando'].map(tag=>(
+                <button key={tag} onClick={()=>navigator.clipboard.writeText(tag)}
+                  style={{border:'1px solid var(--border)',background:'var(--gray-50)',borderRadius:'var(--radius-pill)',
+                    padding:'4px 12px',fontSize:'var(--text-xs)',fontWeight:600,color:'var(--brand-600)',cursor:'pointer'}}>
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
