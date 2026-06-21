@@ -751,6 +751,7 @@ function Crm({user,onAddLead}) {
   const [loading,setLoading] = React.useState(true);
   const [tab,setTab] = React.useState('all');
   const [sel,setSel] = React.useState(null);
+  const [showQuick,setShowQuick] = React.useState(false);
   const [Toast,toast] = useToast();
 
   const load = async () => {
@@ -781,12 +782,279 @@ function Crm({user,onAddLead}) {
   return (
     <div style={{display:'flex',flexDirection:'column',gap:'var(--space-5)'}}>
       {Toast}
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}>
         <Tabs value={tab} onChange={setTab} tabs={tabs} style={{flex:1}}/>
-        <div style={{marginLeft:16}}><Btn variant="secondary" size="sm" leading={<I.filter size={14}/>}>Filter</Btn></div>
+        <div style={{display:'flex',gap:8,flexShrink:0}}>
+          <Btn variant="primary" size="sm" leading={<I.sparkles size={14}/>} onClick={()=>setShowQuick(true)}>Quick add</Btn>
+          <Btn variant="secondary" size="sm" leading={<I.plus size={14}/>} onClick={onAddLead}>Add lead</Btn>
+        </div>
       </div>
       <Table columns={cols} rows={rows} onRowClick={r=>{setSel(r);}}/>
       {sel&&<CrmDrawer lead={sel} onClose={()=>setSel(null)} onUpdate={()=>{load();setSel(l=>leads.find(x=>x.id===l?.id)||null);}} toast={toast}/>}
+      <Drawer open={showQuick} onClose={()=>setShowQuick(false)} title="Quick add lead">
+        <QuickAddLead user={user} toast={toast} onSaved={()=>{setShowQuick(false);load();}} onClose={()=>setShowQuick(false)}/>
+      </Drawer>
+    </div>
+  );
+}
+
+/* ================================================================
+   NATURAL LANGUAGE PARSERS
+   ================================================================ */
+const CITIES=['Winter Park','Lake Nona','Kissimmee','Windermere','Clermont','Orlando','Oviedo','Sanford','Apopka','Altamonte Springs','Maitland','Casselberry','Longwood','Doctor Phillips'];
+const SOURCES=['Google','Facebook','Instagram','Yelp','Nextdoor','Referral','TikTok','Repeat','Walk-in','Other'];
+const SERVICE_KEYS=['standard','deep','move-in','move-out','airbnb','turnover','post-construction','recurring'];
+
+function parseLeadText(text) {
+  const t = text.trim();
+  const out = {first_name:'',last_name:'',phone:'',email:'',city:'Orlando',zip:'',lead_source:'',customer_type:'Residential',notes:'',status:'new lead'};
+
+  // Email
+  const emailM = t.match(/[\w.+-]+@[\w-]+\.\w+/);
+  if(emailM) out.email = emailM[0];
+
+  // Phone — various formats
+  const phoneM = t.match(/(\(?\d{3}\)?[\s.\-]?\d{3}[\s.\-]?\d{4})/);
+  if(phoneM) out.phone = phoneM[0];
+
+  // ZIP
+  const zipM = t.match(/\b\d{5}\b/);
+  if(zipM) out.zip = zipM[0];
+
+  // City
+  const cityMatch = CITIES.find(c => t.toLowerCase().includes(c.toLowerCase()));
+  if(cityMatch) out.city = cityMatch;
+
+  // Lead source
+  const srcMatch = SOURCES.find(s => t.toLowerCase().includes(s.toLowerCase()));
+  if(srcMatch) out.lead_source = srcMatch;
+
+  // Customer type
+  if(/airbnb|vrbo|vacation rental|short.term/i.test(t)) out.customer_type = 'Airbnb host';
+  else if(/realtor|real estate|listing|agent/i.test(t)) out.customer_type = 'Realtor';
+  else if(/commercial|office|business/i.test(t)) out.customer_type = 'Commercial';
+  else if(/property manager|hoa|complex/i.test(t)) out.customer_type = 'Property manager';
+
+  // Status hints
+  if(/quoted|quote sent/i.test(t)) out.status='quoted';
+  else if(/booked|scheduled/i.test(t)) out.status='booked';
+  else if(/lost|not interested|cancel/i.test(t)) out.status='lost';
+
+  // Name — first two words that look like a name (before any comma or phone)
+  const stripped = t
+    .replace(/[\w.+-]+@[\w-]+\.\w+/g,'')
+    .replace(/\(?\d{3}\)?[\s.\-]?\d{3}[\s.\-]?\d{4}/g,'')
+    .replace(/\b\d{5}\b/g,'')
+    .replace(new RegExp(CITIES.join('|'),'gi'),'')
+    .replace(new RegExp(SOURCES.join('|'),'gi'),'')
+    .replace(/[,|]/g,' ').replace(/\s+/g,' ').trim();
+
+  const words = stripped.split(' ').filter(w=>w.length>1&&/^[A-Za-z]/.test(w)&&!/^(clean|deep|standard|move|airbnb|google|facebook|instagram|recurring|phone|email|wants|need|looking|she|he|they|the|and|for|with|in|at|on|is|a)/i.test(w));
+  if(words[0]) out.first_name = words[0];
+  if(words[1]) out.last_name = words[1];
+
+  // Remaining as notes
+  out.notes = t;
+  return out;
+}
+
+function parseJobText(text, customers) {
+  const t = text.trim();
+  const out = {customer_id:'',address:'',service_type:'Standard cleaning',scheduled_date:today(),start_time:'09:00',end_time:'11:00',price:'',payout:'',notes:''};
+
+  // Service type
+  if(/deep/i.test(t)) out.service_type='Deep cleaning';
+  else if(/move.in|move.out/i.test(t)) out.service_type='Move-in / move-out';
+  else if(/airbnb|turnover/i.test(t)) out.service_type='Airbnb turnover';
+  else if(/post.construction/i.test(t)) out.service_type='Post-construction';
+  else if(/standard|regular/i.test(t)) out.service_type='Standard cleaning';
+
+  // Price
+  const priceM = t.match(/\$(\d+)/);
+  if(priceM) {out.price=priceM[1]; out.payout=String(Math.round(+priceM[1]*.6));}
+
+  // Time patterns: 9am, 9:00, 9:00am
+  const timeM = t.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
+  if(timeM){
+    let h=+timeM[1];
+    const mn=timeM[2]||'00';
+    if(/pm/i.test(timeM[3])&&h<12) h+=12;
+    if(/am/i.test(timeM[3])&&h===12) h=0;
+    out.start_time=`${String(h).padStart(2,'0')}:${mn}`;
+    out.end_time=`${String(h+2).padStart(2,'0')}:${mn}`;
+  }
+
+  // Date patterns: Monday, June 30, tomorrow, next Friday, July 4
+  const WEEKDAYS=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  const MONTHS_NAMES=['january','february','march','april','may','june','july','august','september','october','november','december'];
+  const now=new Date();
+  if(/tomorrow/i.test(t)){const d=new Date(now);d.setDate(d.getDate()+1);out.scheduled_date=d.toISOString().slice(0,10);}
+  else {
+    const wdM=t.match(new RegExp('(next\\s+)?('+WEEKDAYS.join('|')+')', 'i'));
+    if(wdM){
+      const target=WEEKDAYS.indexOf(wdM[2].toLowerCase());
+      const cur=now.getDay();
+      let diff=target-cur;
+      if(diff<=0||wdM[1]) diff+=7;
+      const d=new Date(now);d.setDate(d.getDate()+diff);
+      out.scheduled_date=d.toISOString().slice(0,10);
+    } else {
+      const dateM=t.match(new RegExp('('+MONTHS_NAMES.join('|')+')\\s+(\\d{1,2})','i'));
+      if(dateM){
+        const mo=MONTHS_NAMES.indexOf(dateM[1].toLowerCase());
+        const dy=+dateM[2];
+        const d=new Date(now.getFullYear(),mo,dy);
+        if(d<now) d.setFullYear(d.getFullYear()+1);
+        out.scheduled_date=d.toISOString().slice(0,10);
+      }
+    }
+  }
+
+  // Match customer by name
+  if(customers&&customers.length){
+    const words=t.toLowerCase().split(/\W+/);
+    const match=customers.find(c=>{
+      const fn=(c.first_name||'').toLowerCase();
+      const ln=(c.last_name||'').toLowerCase();
+      return words.includes(fn)||words.includes(ln)||(fn&&ln&&t.toLowerCase().includes(fn+' '+ln));
+    });
+    if(match) out.customer_id=match.id;
+  }
+
+  out.notes=t;
+  return out;
+}
+
+/* ================================================================
+   QUICK ADD COMPONENTS
+   ================================================================ */
+function QuickAddLead({user, onSaved, toast, onClose}) {
+  const [text,setText]=React.useState('');
+  const [parsed,setParsed]=React.useState(null);
+  const [saving,setSaving]=React.useState(false);
+
+  const parse=()=>{if(text.trim()) setParsed(parseLeadText(text));};
+  const set=k=>e=>setParsed(p=>({...p,[k]:e.target.value}));
+
+  const save=async e=>{
+    e.preventDefault();
+    if(!sb||!parsed) return;
+    setSaving(true);
+    const{error}=await sb.from('customers').insert({...parsed,user_id:user.id});
+    setSaving(false);
+    if(!error){toast('Lead added to CRM');onSaved();}
+    else toast('Error: '+error.message,'danger');
+  };
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:16}}>
+      {!parsed?(
+        <>
+          <div style={{background:'var(--brand-50)',border:'1px solid var(--brand-100)',borderRadius:'var(--radius-md)',padding:14,fontSize:'var(--text-sm)',color:'var(--brand-700)',lineHeight:1.6}}>
+            Just type the lead info naturally — name, city, phone, where they found you, what they need. I'll figure out the rest.
+          </div>
+          <div style={{background:'var(--gray-50)',border:'1px solid var(--border)',borderRadius:'var(--radius-md)',padding:12,fontSize:'var(--text-xs)',color:'var(--text-muted)'}}>
+            <strong>Examples:</strong><br/>
+            "Maria Garcia, Winter Park, wants a deep clean, 407-555-1234, found us on Google"<br/>
+            "John Smith, Lake Nona, Airbnb host, needs turnover cleaning, instagram"<br/>
+            "Sarah Lee 407-999-0000 move out cleaning Kissimmee referral"
+          </div>
+          <textarea value={text} onChange={e=>setText(e.target.value)} placeholder="Type lead info here…"
+            style={{width:'100%',minHeight:100,padding:12,border:'1px solid var(--border)',borderRadius:'var(--radius-md)',
+              fontFamily:'var(--font-body)',fontSize:'var(--text-md)',resize:'vertical',boxSizing:'border-box',outline:'none',lineHeight:1.6}}/>
+          <Btn variant="primary" fullWidth onClick={parse} disabled={!text.trim()}>Parse lead info</Btn>
+        </>
+      ):(
+        <form onSubmit={save} style={{display:'flex',flexDirection:'column',gap:14}}>
+          <div style={{background:'var(--green-50)',border:'1px solid var(--green-100)',borderRadius:'var(--radius-md)',padding:12,fontSize:'var(--text-sm)',color:'var(--green-700)',fontWeight:600}}>
+            Review and fix anything below, then hit Save.
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+            <Field label="First name"><Input value={parsed.first_name} onChange={set('first_name')}/></Field>
+            <Field label="Last name"><Input value={parsed.last_name} onChange={set('last_name')}/></Field>
+            <Field label="Phone"><Input value={parsed.phone} onChange={set('phone')}/></Field>
+            <Field label="Email"><Input value={parsed.email} onChange={set('email')}/></Field>
+            <Field label="City"><Input value={parsed.city} onChange={set('city')}/></Field>
+            <Field label="ZIP"><Input value={parsed.zip} onChange={set('zip')}/></Field>
+          </div>
+          <Field label="Lead source"><Sel value={parsed.lead_source} onChange={set('lead_source')} options={['','Google','Facebook','Instagram','Yelp','Nextdoor','Referral','TikTok','Repeat','Other']}/></Field>
+          <Field label="Customer type"><Sel value={parsed.customer_type} onChange={set('customer_type')} options={['Residential','Airbnb host','Realtor','Commercial','Property manager']}/></Field>
+          <Field label="Status"><Sel value={parsed.status} onChange={set('status')} options={['new lead','quoted','booked','active','lost']}/></Field>
+          <Field label="Notes"><Input value={parsed.notes} onChange={set('notes')} multiline/></Field>
+          <div style={{display:'flex',gap:8}}>
+            <Btn variant="secondary" fullWidth onClick={()=>setParsed(null)}>← Re-type</Btn>
+            <Btn variant="primary" fullWidth type="submit" disabled={saving}>{saving?'Saving…':'Save lead'}</Btn>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
+
+function QuickAddJob({user, customers, subs, onSaved, toast, onClose}) {
+  const [text,setText]=React.useState('');
+  const [parsed,setParsed]=React.useState(null);
+  const [saving,setSaving]=React.useState(false);
+
+  const parse=()=>{if(text.trim()) setParsed(parseJobText(text,customers));};
+  const set=k=>e=>setParsed(p=>({...p,[k]:e.target.value}));
+
+  const save=async e=>{
+    e.preventDefault();
+    if(!sb||!parsed) return;
+    setSaving(true);
+    const{error}=await sb.from('jobs').insert({...parsed,user_id:user.id,price:+parsed.price||0,payout:+parsed.payout||0,
+      customer_id:parsed.customer_id||null,subcontractor_id:parsed.subcontractor_id||null});
+    setSaving(false);
+    if(!error){toast('Job added');onSaved();}
+    else toast('Error: '+error.message,'danger');
+  };
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:16}}>
+      {!parsed?(
+        <>
+          <div style={{background:'var(--brand-50)',border:'1px solid var(--brand-100)',borderRadius:'var(--radius-md)',padding:14,fontSize:'var(--text-sm)',color:'var(--brand-700)',lineHeight:1.6}}>
+            Type the job details naturally. I'll pick up the date, time, service type, customer name, and price.
+          </div>
+          <div style={{background:'var(--gray-50)',border:'1px solid var(--border)',borderRadius:'var(--radius-md)',padding:12,fontSize:'var(--text-xs)',color:'var(--text-muted)'}}>
+            <strong>Examples:</strong><br/>
+            "Deep clean for Maria Garcia Monday at 9am $240"<br/>
+            "Airbnb turnover June 30 at 10am Kissimmee $165 send Carlos"<br/>
+            "Standard clean tomorrow 2pm Lake Nona $150"
+          </div>
+          <textarea value={text} onChange={e=>setText(e.target.value)} placeholder="Type job info here…"
+            style={{width:'100%',minHeight:100,padding:12,border:'1px solid var(--border)',borderRadius:'var(--radius-md)',
+              fontFamily:'var(--font-body)',fontSize:'var(--text-md)',resize:'vertical',boxSizing:'border-box',outline:'none',lineHeight:1.6}}/>
+          <Btn variant="primary" fullWidth onClick={parse} disabled={!text.trim()}>Parse job info</Btn>
+        </>
+      ):(
+        <form onSubmit={save} style={{display:'flex',flexDirection:'column',gap:14}}>
+          <div style={{background:'var(--green-50)',border:'1px solid var(--green-100)',borderRadius:'var(--radius-md)',padding:12,fontSize:'var(--text-sm)',color:'var(--green-700)',fontWeight:600}}>
+            Review and fix anything below, then hit Save.
+          </div>
+          <Field label="Customer">
+            <Sel value={parsed.customer_id} onChange={set('customer_id')}
+              options={[{value:'',label:'— select —'},...(customers||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))]}/>
+          </Field>
+          <Field label="Service address"><Input value={parsed.address} onChange={set('address')} placeholder="123 Palm St, Orlando"/></Field>
+          <Field label="Service type"><Sel value={parsed.service_type} onChange={set('service_type')} options={Object.keys(TYPES)}/></Field>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+            <Field label="Date"><Input type="date" value={parsed.scheduled_date} onChange={set('scheduled_date')}/></Field>
+            <Field label="Start time"><Input type="time" value={parsed.start_time} onChange={set('start_time')}/></Field>
+            <Field label="Price ($)"><Input type="number" value={parsed.price} onChange={set('price')}/></Field>
+            <Field label="Payout ($)"><Input type="number" value={parsed.payout} onChange={set('payout')}/></Field>
+          </div>
+          <Field label="Subcontractor">
+            <Sel value={parsed.subcontractor_id||''} onChange={set('subcontractor_id')}
+              options={[{value:'',label:'— select —'},...(subs||[]).map(s=>({value:s.id,label:s.name}))]}/>
+          </Field>
+          <div style={{display:'flex',gap:8}}>
+            <Btn variant="secondary" fullWidth onClick={()=>setParsed(null)}>← Re-type</Btn>
+            <Btn variant="primary" fullWidth type="submit" disabled={saving}>{saving?'Saving…':'Save job'}</Btn>
+          </div>
+        </form>
+      )}
     </div>
   );
 }
@@ -1029,6 +1297,7 @@ function Jobs({user}) {
   const [jobs,setJobs]=React.useState([]);
   const [loading,setLoading]=React.useState(true);
   const [showAdd,setShowAdd]=React.useState(false);
+  const [showQuick,setShowQuick]=React.useState(false);
   const [selJob,setSelJob]=React.useState(null);
   const [view,setView]=React.useState('calendar');
   const [Toast,toast]=useToast();
@@ -1118,7 +1387,10 @@ function Jobs({user}) {
 
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         <ViewToggle/>
-        <Btn variant="primary" size="sm" leading={<I.plus size={15}/>} onClick={()=>{setF(p=>({...p,scheduled_date:today()}));setShowAdd(true);}}>New job</Btn>
+        <div style={{display:'flex',gap:8}}>
+          <Btn variant="primary" size="sm" leading={<I.sparkles size={14}/>} onClick={()=>setShowQuick(true)}>Quick add</Btn>
+          <Btn variant="secondary" size="sm" leading={<I.plus size={15}/>} onClick={()=>{setF(p=>({...p,scheduled_date:today()}));setShowAdd(true);}}>New job</Btn>
+        </div>
       </div>
 
       {view==='calendar'
@@ -1157,6 +1429,12 @@ function Jobs({user}) {
             <Btn variant="danger" fullWidth onClick={()=>deleteJob(selJob.id)}>Delete job</Btn>
           </div>
         </div>}
+      </Drawer>
+
+      {/* Quick add job drawer */}
+      <Drawer open={showQuick} onClose={()=>setShowQuick(false)} title="Quick add job">
+        <QuickAddJob user={user} customers={customers} subs={subs} toast={toast}
+          onSaved={()=>{setShowQuick(false);load();}} onClose={()=>setShowQuick(false)}/>
       </Drawer>
 
       {/* New job drawer */}
