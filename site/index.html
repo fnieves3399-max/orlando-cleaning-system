@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Orlando Cleaning | Professional House Cleaning Orlando, FL</title>
+<meta name="description" content="Top-rated house cleaning in Orlando, Winter Park, Lake Nona & Kissimmee. Background-checked cleaners, flat pricing, instant online quotes. Book in 60 seconds."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --brand:#0E7DC9;--brand-dark:#0A63A0;--brand-light:#EFF7FE;
+  --green:#1FA968;--navy:#0C2138;--white:#fff;
+  --gray-50:#F6F8FB;--gray-100:#EDF1F6;--gray-200:#DEE5EE;--gray-500:#6E8195;--gray-700:#36495D;
+  --font-head:'Plus Jakarta Sans',sans-serif;--font-body:'Public Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);color:var(--gray-700);background:#fff;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{max-width:100%}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--gray-200);padding:0 24px}
+.nav-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:68px}
+.logo{display:flex;align-items:center;gap:10}
+.logo-icon{width:38px;height:38px;background:var(--brand);border-radius:9px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:22px;height:22px}
+.logo-text{font-family:var(--font-head);font-weight:800;font-size:17px;color:var(--navy);line-height:1.1}
+.logo-sub{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--brand);margin-top:1px}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{font-weight:600;font-size:15px;color:var(--gray-700);transition:color .15s}
+.nav-links a:hover{color:var(--brand)}
+.nav-cta{background:var(--brand);color:#fff;padding:10px 22px;border-radius:8px;font-weight:700;font-size:15px;
+  font-family:var(--font-head);transition:background .15s;display:inline-flex;align-items:center;gap:7px}
+.nav-cta:hover{background:var(--brand-dark)}
+@media(max-width:700px){.nav-links{display:none}}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,#163A5E 60%,#0A4F7E 100%);
+  padding:96px 24px 80px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(14,125,201,.25) 0%,transparent 70%)}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:6px 16px;
+  font-size:13px;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:.04em;margin-bottom:28px}
+.hero h1{font-family:var(--font-head);font-size:clamp(32px,6vw,62px);font-weight:900;color:#fff;
+  line-height:1.05;letter-spacing:-0.025em;max-width:780px;margin:0 auto 20px}
+.hero h1 span{color:#56B0E8}
+.hero p{font-size:clamp(16px,2vw,20px);color:rgba(255,255,255,.75);max-width:560px;margin:0 auto 36px;line-height:1.6}
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn-primary{background:var(--brand);color:#fff;padding:16px 32px;border-radius:10px;
+  font-family:var(--font-head);font-weight:700;font-size:17px;transition:all .15s;
+  display:inline-flex;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(14,125,201,.4)}
+.btn-primary:hover{background:var(--brand-dark);transform:translateY(-1px);box-shadow:0 8px 26px rgba(14,125,201,.5)}
+.btn-ghost{background:rgba(255,255,255,.1);color:#fff;padding:16px 32px;border-radius:10px;
+  font-family:var(--font-head);font-weight:700;font-size:17px;border:1px solid rgba(255,255,255,.25);
+  transition:all .15s;display:inline-flex;align-items:center;gap:8px}
+.btn-ghost:hover{background:rgba(255,255,255,.18)}
+.hero-stats{display:flex;gap:40px;justify-content:center;flex-wrap:wrap;margin-top:56px;padding-top:48px;
+  border-top:1px solid rgba(255,255,255,.12)}
+.hero-stat-num{font-family:var(--font-head);font-size:36px;font-weight:900;color:#fff;letter-spacing:-0.02em}
+.hero-stat-label{font-size:14px;color:rgba(255,255,255,.6);margin-top:2px}
+
+/* TRUST BAR */
+.trust-bar{background:var(--gray-50);border-bottom:1px solid var(--gray-200);padding:20px 24px}
+.trust-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:center;
+  gap:clamp(16px,4vw,48px);flex-wrap:wrap}
+.trust-item{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:600;color:var(--gray-700)}
+.trust-item svg{color:var(--brand);flex-shrink:0}
+
+/* SECTIONS */
+section{padding:80px 24px}
+.section-inner{max-width:1100px;margin:0 auto}
+.eyebrow{font-family:var(--font-head);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--brand);margin-bottom:10px}
+.section-title{font-family:var(--font-head);font-size:clamp(26px,4vw,42px);font-weight:800;color:var(--navy);
+  letter-spacing:-0.02em;line-height:1.1;margin-bottom:14px}
+.section-sub{font-size:17px;color:var(--gray-500);max-width:560px;line-height:1.6}
+.section-header{margin-bottom:52px}
+
+/* SERVICES */
+.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.service-card{background:#fff;border:1px solid var(--gray-200);border-radius:14px;padding:28px;
+  transition:all .2s;box-shadow:0 1px 3px rgba(12,33,56,.06)}
+.service-card:hover{border-color:var(--brand);box-shadow:0 4px 20px rgba(14,125,201,.12);transform:translateY(-2px)}
+.service-icon{width:48px;height:48px;background:var(--brand-light);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;margin-bottom:16px;color:var(--brand)}
+.service-card h3{font-family:var(--font-head);font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.service-card p{font-size:14px;color:var(--gray-500);line-height:1.6}
+.service-price{display:inline-block;margin-top:14px;font-family:var(--font-head);font-weight:700;
+  font-size:13px;color:var(--brand);background:var(--brand-light);padding:4px 12px;border-radius:99px}
+
+/* HOW IT WORKS */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:32px}
+.step{text-align:center}
+.step-num{width:52px;height:52px;border-radius:50%;background:var(--brand);color:#fff;
+  font-family:var(--font-head);font-weight:900;font-size:22px;display:flex;align-items:center;
+  justify-content:center;margin:0 auto 18px}
+.step h3{font-family:var(--font-head);font-weight:700;font-size:17px;color:var(--navy);margin-bottom:8px}
+.step p{font-size:14px;color:var(--gray-500);line-height:1.6}
+
+/* AREAS */
+.areas-grid{display:flex;flex-wrap:wrap;gap:10px}
+.area-chip{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:99px;
+  padding:8px 18px;font-size:14px;font-weight:600;color:var(--gray-700)}
+
+/* TESTIMONIALS */
+.reviews-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.review-card{background:#fff;border:1px solid var(--gray-200);border-radius:14px;padding:24px;box-shadow:0 1px 3px rgba(12,33,56,.06)}
+.stars{color:#F59E0B;font-size:18px;margin-bottom:12px}
+.review-card p{font-size:15px;color:var(--gray-700);line-height:1.65;font-style:italic;margin-bottom:16px}
+.reviewer{display:flex;align-items:center;gap:10px}
+.reviewer-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-head);font-weight:700;font-size:15px;color:#fff}
+.reviewer-name{font-family:var(--font-head);font-weight:700;font-size:14px;color:var(--navy)}
+.reviewer-city{font-size:13px;color:var(--gray-500)}
+
+/* CONTACT / FORM */
+.contact-section{background:linear-gradient(135deg,var(--navy) 0%,#163A5E 100%);padding:80px 24px}
+.contact-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+@media(max-width:800px){.contact-grid{grid-template-columns:1fr}}
+.contact-info h2{font-family:var(--font-head);font-size:clamp(26px,4vw,40px);font-weight:800;color:#fff;
+  line-height:1.1;margin-bottom:16px}
+.contact-info p{color:rgba(255,255,255,.7);font-size:16px;line-height:1.65;margin-bottom:32px}
+.contact-perks{display:flex;flex-direction:column;gap:14px}
+.perk{display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.85);font-size:15px;font-weight:500}
+.perk-check{width:22px;height:22px;border-radius:50%;background:var(--green);display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;font-size:13px;color:#fff}
+.form-card{background:#fff;border-radius:16px;padding:36px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.form-card h3{font-family:var(--font-head);font-weight:800;font-size:22px;color:var(--navy);margin-bottom:6px}
+.form-card p{font-size:14px;color:var(--gray-500);margin-bottom:24px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:500px){.form-row{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-family:var(--font-head);font-size:13px;font-weight:600;color:var(--navy)}
+.field input,.field select,.field textarea{
+  height:42px;padding:0 13px;border:1px solid var(--gray-200);border-radius:8px;
+  font-family:var(--font-body);font-size:15px;color:var(--navy);outline:none;width:100%;background:#fff;transition:border .15s}
+.field textarea{height:auto;padding:10px 13px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(14,125,201,.15)}
+.field select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%236E8195' stroke-width='1.6'><path d='M4 6l4 4 4-4'/></svg>");
+  background-repeat:no-repeat;background-position:right 12px center;cursor:pointer}
+.submit-btn{width:100%;height:50px;background:var(--brand);color:#fff;border:none;border-radius:10px;
+  font-family:var(--font-head);font-weight:700;font-size:16px;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px}
+.submit-btn:hover:not(:disabled){background:var(--brand-dark)}
+.submit-btn:disabled{opacity:.65;cursor:not-allowed}
+.form-success{text-align:center;padding:32px 0}
+.form-success-icon{font-size:48px;margin-bottom:12px}
+.form-success h4{font-family:var(--font-head);font-weight:800;font-size:20px;color:var(--navy);margin-bottom:8px}
+.form-success p{font-size:15px;color:var(--gray-500)}
+
+/* FOOTER */
+footer{background:var(--navy);color:rgba(255,255,255,.6);padding:48px 24px 32px}
+.footer-inner{max-width:1100px;margin:0 auto}
+.footer-top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:32px;margin-bottom:40px}
+.footer-brand p{font-size:14px;margin-top:12px;max-width:280px;line-height:1.6}
+.footer-links h4{font-family:var(--font-head);font-weight:700;font-size:14px;color:#fff;margin-bottom:14px}
+.footer-links ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.footer-links li a{font-size:14px;color:rgba(255,255,255,.55);transition:color .15s}
+.footer-links li a:hover{color:#fff}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:24px;
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 32 32" fill="none">
+          <path d="M16 4c3.2 3.6 6 6.9 6 10.2a6 6 0 1 1-12 0c0-3.3 2.8-6.6 6-10.2Z" fill="#fff"/>
+          <path d="M22.5 6l.5 1.4 1.4.5-1.4.5L22.5 10l-.5-1.6-1.4-.5 1.4-.5z" fill="#fff" opacity=".7"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-text">Orlando Cleaning</div>
+        <div class="logo-sub">Growth System</div>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="#services">Services</a>
+      <a href="#how">How it works</a>
+      <a href="#areas">Service areas</a>
+      <a href="#reviews">Reviews</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <a href="#contact" class="nav-cta">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      Get a free quote
+    </a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3l1.7 4.6L18 9l-4.3 1.4L12 15l-1.7-4.6L6 9l4.3-1.4z"/></svg>
+    #1 Rated Cleaning Service in Orlando
+  </div>
+  <h1>Your Home, <span>Sparkling Clean.</span><br/>Every Single Time.</h1>
+  <p>Background-checked, vetted local cleaners. Flat pricing with no hidden fees. Book your first clean in under 60 seconds.</p>
+  <div class="hero-btns">
+    <a href="#contact" class="btn-primary">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      Get my instant quote
+    </a>
+    <a href="tel:4070000000" class="btn-ghost">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6.6 3.5 4 4.3a2 2 0 0 0-1.3 2.4 18 18 0 0 0 12.6 12.6 2 2 0 0 0 2.4-1.3l.8-2.6a1.5 1.5 0 0 0-.9-1.8l-3-1.1a1.5 1.5 0 0 0-1.6.4l-1 1A14 14 0 0 1 8 9l1-1a1.5 1.5 0 0 0 .4-1.6l-1.1-3a1.5 1.5 0 0 0-1.7-.9z"/></svg>
+      (407) 000-0000
+    </a>
+  </div>
+  <div class="hero-stats">
+    <div><div class="hero-stat-num">500+</div><div class="hero-stat-label">Homes cleaned</div></div>
+    <div><div class="hero-stat-num">4.9★</div><div class="hero-stat-label">Average rating</div></div>
+    <div><div class="hero-stat-num">12+</div><div class="hero-stat-label">Cities served</div></div>
+    <div><div class="hero-stat-num">100%</div><div class="hero-stat-label">Satisfaction guarantee</div></div>
+  </div>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-inner">
+    <div class="trust-item">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M7.8 4.3A2 2 0 0 0 6 6.1L5 10H3a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h1l2 5a1 1 0 0 0 1 .9h8a1 1 0 0 0 1-.9l2-5h1a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-2l-1-3.9A2 2 0 0 0 16.2 4.3"/></svg>
+      Background-checked cleaners
+    </div>
+    <div class="trust-item">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+      Satisfaction guaranteed
+    </div>
+    <div class="trust-item">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5l8.5 6 8.5-6"/></svg>
+      No contracts, cancel anytime
+    </div>
+    <div class="trust-item">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+      Book in 60 seconds
+    </div>
+    <div class="trust-item">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
+      Serving all of Orlando metro
+    </div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="eyebrow">What we offer</div>
+      <h2 class="section-title">Cleaning services for every need</h2>
+      <p class="section-sub">From routine maid service to move-out deep cleans — we handle it all with flat, upfront pricing.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M3 13h8V3H3zM13 21h8v-10h-8zM13 3v6h8V3zM3 21h8v-6H3z"/></svg>
+        </div>
+        <h3>Standard Cleaning</h3>
+        <p>Regular maintenance cleaning — kitchens, bathrooms, vacuuming, mopping, dusting. Perfect for keeping your home consistently clean.</p>
+        <span class="service-price">Starting at $120</span>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M12 3l1.7 4.6L18 9l-4.3 1.4L12 15l-1.7-4.6L6 9l4.3-1.4z"/></svg>
+        </div>
+        <h3>Deep Cleaning</h3>
+        <p>A thorough top-to-bottom clean — inside appliances, baseboards, ceiling fans, grout, and every corner. Perfect for first-time cleans.</p>
+        <span class="service-price">Starting at $220</span>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </div>
+        <h3>Move-In / Move-Out</h3>
+        <p>Get your deposit back or make your new place spotless before moving in. We clean every inch so you don't have to.</p>
+        <span class="service-price">Starting at $250</span>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>
+        </div>
+        <h3>Airbnb Turnover</h3>
+        <p>Same-day turnovers between guests. Full clean, linen swap, restocking, and a photo report sent to you when done.</p>
+        <span class="service-price">Starting at $165</span>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3>Recurring Maid Service</h3>
+        <p>Weekly or biweekly service with the same trusted cleaner every time. Save up to 15% on recurring bookings.</p>
+        <span class="service-price">Save up to 15%</span>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><rect x="3" y="7.5" width="18" height="12.5" rx="2.5"/><path d="M8 7.5V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1.5M3 13h18"/></svg>
+        </div>
+        <h3>Post-Construction</h3>
+        <p>Heavy-duty cleaning after renovations — dust, debris, paint residue, and construction mess fully removed.</p>
+        <span class="service-price">Custom quote</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" style="background:var(--gray-50)">
+  <div class="section-inner">
+    <div class="section-header" style="text-align:center">
+      <div class="eyebrow">Simple process</div>
+      <h2 class="section-title">Booked in 60 seconds</h2>
+      <p class="section-sub" style="margin:0 auto">No back-and-forth calls. No waiting. Just clean.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Tell us about your home</h3>
+        <p>Fill in bedrooms, bathrooms, and what type of clean you need. Your quote is instant.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Pick a date & time</h3>
+        <p>Choose from available slots that work for your schedule. Same-week availability in most areas.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>We show up & clean</h3>
+        <p>A background-checked local cleaner arrives on time. You get a notification when they're done.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <h3>Enjoy your clean home</h3>
+        <p>100% satisfaction guarantee. If anything wasn't done right, we come back and fix it free.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AREAS -->
+<section id="areas">
+  <div class="section-inner">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center">
+      <div>
+        <div class="eyebrow">Where we clean</div>
+        <h2 class="section-title">Serving the entire Orlando metro</h2>
+        <p style="color:var(--gray-500);font-size:16px;line-height:1.65;margin-bottom:32px">
+          From Winter Park to Kissimmee, our team covers all major neighborhoods and suburbs across Central Florida.
+        </p>
+        <div class="areas-grid">
+          <span class="area-chip">Orlando</span>
+          <span class="area-chip">Winter Park</span>
+          <span class="area-chip">Lake Nona</span>
+          <span class="area-chip">Kissimmee</span>
+          <span class="area-chip">Windermere</span>
+          <span class="area-chip">Clermont</span>
+          <span class="area-chip">Oviedo</span>
+          <span class="area-chip">Sanford</span>
+          <span class="area-chip">Apopka</span>
+          <span class="area-chip">Altamonte Springs</span>
+          <span class="area-chip">Maitland</span>
+          <span class="area-chip">Doctor Phillips</span>
+        </div>
+      </div>
+      <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:16px;padding:36px;text-align:center">
+        <div style="font-size:64px;margin-bottom:16px">🏡</div>
+        <div style="font-family:var(--font-head);font-weight:800;font-size:32px;color:var(--navy)">12+ Cities</div>
+        <div style="color:var(--gray-500);margin-top:6px;font-size:16px">across the Orlando metro</div>
+        <div style="margin-top:24px;display:flex;flex-direction:column;gap:10px">
+          <a href="#contact" class="btn-primary" style="justify-content:center">Check my area</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section id="reviews" style="background:var(--gray-50)">
+  <div class="section-inner">
+    <div class="section-header" style="text-align:center">
+      <div class="eyebrow">Real customers</div>
+      <h2 class="section-title">Orlando families love us</h2>
+      <p class="section-sub" style="margin:0 auto">Don't take our word for it — here's what our customers say.</p>
+    </div>
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p>"I've tried 3 different cleaning services and Orlando Cleaning is by far the best. My house has never looked this good. The team is professional, thorough, and always on time."</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar" style="background:#0E7DC9">SM</div>
+          <div><div class="reviewer-name">Sarah M.</div><div class="reviewer-city">Winter Park</div></div>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p>"As an Airbnb host, I rely on them completely for my turnovers. They're fast, reliable, and my guests always leave 5-star reviews about how clean the place is."</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar" style="background:#1FA968">JR</div>
+          <div><div class="reviewer-name">James R.</div><div class="reviewer-city">Kissimmee</div></div>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p>"I was skeptical about online booking but it was so easy. Got a quote instantly, booked for the next day, and the cleaner did an amazing job. Will definitely use again!"</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar" style="background:#163A5E">ML</div>
+          <div><div class="reviewer-name">Maria L.</div><div class="reviewer-city">Lake Nona</div></div>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p>"We needed a deep clean before listing our home. The result was incredible — it looked showroom-ready. Our realtor was impressed and we sold above asking price!"</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar" style="background:#E8A93B">DK</div>
+          <div><div class="reviewer-name">David K.</div><div class="reviewer-city">Windermere</div></div>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p>"The biweekly service has been a game changer. Same cleaner every time, she knows exactly how I like things. Worth every penny as a working mom with 3 kids."</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar" style="background:#8B5CF6">TN</div>
+          <div><div class="reviewer-name">Tanya N.</div><div class="reviewer-city">Oviedo</div></div>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p>"Super professional, showed up on time, and the price matched the quote exactly. No surprises. Our kitchen and bathrooms look brand new. Highly recommend!"</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar" style="background:#CE3A30">AP</div>
+          <div><div class="reviewer-name">Amanda P.</div><div class="reviewer-city">Clermont</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT / LEAD FORM -->
+<section class="contact-section" id="contact">
+  <div class="contact-grid">
+    <div class="contact-info">
+      <div class="eyebrow" style="color:#56B0E8;margin-bottom:12px">Get a free quote</div>
+      <h2>Ready for a cleaner home?</h2>
+      <p>Fill in the form and we'll get back to you within 1 hour with a personalized quote. No obligation, no pressure.</p>
+      <div class="contact-perks">
+        <div class="perk"><span class="perk-check">✓</span> Free, no-obligation quote</div>
+        <div class="perk"><span class="perk-check">✓</span> Same-week availability</div>
+        <div class="perk"><span class="perk-check">✓</span> Background-checked cleaners</div>
+        <div class="perk"><span class="perk-check">✓</span> Flat pricing, no surprises</div>
+        <div class="perk"><span class="perk-check">✓</span> 100% satisfaction guarantee</div>
+      </div>
+    </div>
+    <div class="form-card">
+      <h3>Get your free quote</h3>
+      <p>We'll respond within 1 hour during business hours.</p>
+      <div id="form-container">
+        <div class="form-row">
+          <div class="field"><label>First name *</label><input id="f-first" placeholder="Maria" required/></div>
+          <div class="field"><label>Last name *</label><input id="f-last" placeholder="Garcia" required/></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Phone *</label><input id="f-phone" type="tel" placeholder="(407) 555-0123" required/></div>
+          <div class="field"><label>Email</label><input id="f-email" type="email" placeholder="maria@email.com"/></div>
+        </div>
+        <div class="field"><label>City / neighborhood *</label>
+          <select id="f-city">
+            <option value="">— select your city —</option>
+            <option>Orlando</option><option>Winter Park</option><option>Lake Nona</option>
+            <option>Kissimmee</option><option>Windermere</option><option>Clermont</option>
+            <option>Oviedo</option><option>Sanford</option><option>Apopka</option>
+            <option>Altamonte Springs</option><option>Maitland</option><option>Doctor Phillips</option>
+          </select>
+        </div>
+        <div class="field"><label>Service needed</label>
+          <select id="f-service">
+            <option value="">— what do you need? —</option>
+            <option>Standard cleaning</option><option>Deep cleaning</option>
+            <option>Move-in / Move-out</option><option>Airbnb turnover</option>
+            <option>Recurring maid service</option><option>Post-construction</option>
+          </select>
+        </div>
+        <div class="field"><label>Tell us more (optional)</label>
+          <textarea id="f-notes" rows="3" placeholder="Home size, pets, special requests, gate code…"></textarea>
+        </div>
+        <button class="submit-btn" id="submit-btn" onclick="submitForm()">
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          Send my free quote request
+        </button>
+        <p style="font-size:12px;color:var(--gray-500);text-align:center;margin-top:12px">
+          We respect your privacy. No spam, ever.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="logo" style="margin-bottom:0">
+          <div class="logo-icon">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M16 4c3.2 3.6 6 6.9 6 10.2a6 6 0 1 1-12 0c0-3.3 2.8-6.6 6-10.2Z" fill="#fff"/>
+            </svg>
+          </div>
+          <div>
+            <div class="logo-text" style="color:#fff">Orlando Cleaning</div>
+            <div class="logo-sub">Growth System</div>
+          </div>
+        </div>
+        <p>Professional house cleaning across the Orlando metro. Background-checked cleaners, flat pricing, satisfaction guaranteed.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Services</h4>
+        <ul>
+          <li><a href="#services">Standard Cleaning</a></li>
+          <li><a href="#services">Deep Cleaning</a></li>
+          <li><a href="#services">Move-In / Move-Out</a></li>
+          <li><a href="#services">Airbnb Turnover</a></li>
+          <li><a href="#services">Recurring Maid Service</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>Service areas</h4>
+        <ul>
+          <li><a href="#areas">Orlando</a></li>
+          <li><a href="#areas">Winter Park</a></li>
+          <li><a href="#areas">Lake Nona</a></li>
+          <li><a href="#areas">Kissimmee</a></li>
+          <li><a href="#areas">Windermere</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="tel:4070000000">(407) 000-0000</a></li>
+          <li><a href="mailto:felix.nieves@me.com">felix.nieves@me.com</a></li>
+          <li><a href="#contact">Get a free quote</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Orlando Cleaning. All rights reserved.</span>
+      <span>Serving Orlando, FL & surrounding areas</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+const SUPABASE_URL = 'https://dhlbrrfofhbccpgfgyas.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_sM18LHdSYdnJvP26GK9pqg__PXfDo-g';
+
+async function submitForm() {
+  const btn = document.getElementById('submit-btn');
+  const first = document.getElementById('f-first').value.trim();
+  const last  = document.getElementById('f-last').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const city  = document.getElementById('f-city').value;
+  const service = document.getElementById('f-service').value;
+  const notes = document.getElementById('f-notes').value.trim();
+
+  if (!first || !last || !phone) { alert('Please fill in your name and phone number.'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/></svg> Sending…';
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/public_inquiries`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ first_name: first, last_name: last, phone, email, city, service_interest: service, message: notes })
+    });
+
+    if (res.ok || res.status === 201) {
+      document.getElementById('form-container').innerHTML = `
+        <div class="form-success">
+          <div class="form-success-icon">🎉</div>
+          <h4>We got your request!</h4>
+          <p>Thanks ${first}! We'll send you a personalized quote within 1 hour.<br/>Keep an eye on your phone and email.</p>
+        </div>`;
+    } else {
+      throw new Error('Server error');
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg> Send my free quote request';
+    alert('Something went wrong. Please call us at (407) 000-0000.');
+  }
+}
+</script>
+</body>
+</html>
